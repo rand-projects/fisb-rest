@@ -4,7 +4,6 @@ from flask import jsonify
 
 import fisb_restConfig as cfg
 import utilities as util
-import text_wx as textwx
 
 app = Flask(__name__)
 
