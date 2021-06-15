@@ -6,6 +6,7 @@
 __pycache__
 docs/source/_build/
 docs/build/
+venv/
 *.ERR
 foo
 foo0
