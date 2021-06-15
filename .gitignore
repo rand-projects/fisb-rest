@@ -1,0 +1,14 @@
+*~
+.vscode
+.nfs*
+*.978
+*.pyx
+__pycache__
+docs/source/_build/
+docs/build/
+*.ERR
+foo
+foo0
+foo1
+foo2
+foo3
