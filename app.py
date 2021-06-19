@@ -108,7 +108,7 @@ def fisb_unavailable():
 
 @app.route("/notam-tfr")
 def notam_tfr():
-    return util.returnMany({'type': 'NOTAM_TFR'}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'TFR'}, request)
 
 @app.route("/notam")
 def notam():
@@ -125,6 +125,14 @@ def notam_d():
 @app.route("/notam-d/<id>")
 def notam_d_id(id):
     return util.returnMany({'type': 'NOTAM', 'subtype': 'D', 'location': id.upper()}, request)
+
+@app.route("/notam-d-sua")
+def notam_d_sua():
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'D-SUA'}, request)
+
+@app.route("/notam-d-sua/<id>")
+def notam_d_sua_id(id):
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'D-SUA', 'location': id.upper()}, request)
 
 @app.route("/notam-fdc")
 def notam_fdc():
