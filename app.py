@@ -78,6 +78,10 @@ def wst():
 def cwa():
     return util.returnMany({'type': 'CWA'}, request)
 
+@app.route("/cwa-cancel")
+def cwa_cancel():
+    return util.returnMany({'type': 'CWA', 'cancel': {'$exists': True}}, request)
+
 @app.route("/rsr")
 def rsr():
     return util.returnOne({'type': 'RSR'}, request)
@@ -101,6 +105,10 @@ def g_airmet03():
 @app.route("/g-airmet-06")
 def g_airmet06():
     return util.returnMany({'type': 'G_AIRMET', 'subtype': 6}, request)
+
+@app.route("/g-airmet-cancel")
+def g_airmet_cancel():
+    return util.returnMany({'type': 'G_AIRMET', 'cancel': {'$exists': True}}, request)
 
 @app.route("/fis-b-unavailable")
 def fisb_unavailable():
@@ -149,6 +157,10 @@ def notam_tmoa():
 @app.route("/notam-tra")
 def notam_tra():
     return util.returnMany({'type': 'NOTAM', 'subtype': 'TRA'}, request)
+
+@app.route("/notam-cancel")
+def notam_cancel():
+    return util.returnMany({'type': 'NOTAM', 'cancel': {'$exists': True}}, request)
 
 @app.route("/crl-8")
 def crl_8():
