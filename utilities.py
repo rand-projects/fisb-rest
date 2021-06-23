@@ -252,6 +252,76 @@ def checkIfInAltBounds(msg, high, low):
 
     return False
 
+def returnStaticOne(findArg1, request):
+    result = {}
+    
+    hasError, errorString, _, _, \
+        hasLatLong, lat, lon, \
+        hasHighLow, high, low = getStandardQueryItems(request)
+
+    if hasError:
+        result['status'] = -1
+        result['error'] = errorString
+        return jsonify(result)
+
+    msg = dbConn.STATIC.find_one(findArg1)
+
+    if hasLatLong and not checkIfInPolygon(msg, lat, lon):
+        msg = None
+
+    if hasHighLow and not checkIfInAltBounds(msg, high, low):
+        msg = None
+
+    if msg == None:
+        result['status'] = 0
+        result['num_results'] = 0
+        return jsonify(result)
+
+    msg = changeStandardFields(msg)
+
+    result['status'] = 0
+    result['result'] = msg
+    result['num_results'] = 1
+    return jsonify(result)
+    
+def returnStaticMany(findArg1, request):
+    result = {}
+
+    hasError, errorString, _, limit, \
+        hasLatLong, lat, lon, \
+        hasHighLow, high, low = getStandardQueryItems(request)
+    if hasError:
+        result['status'] = -1
+        result['error'] = errorString
+        return jsonify(result)
+
+    cursor = dbConn.STATIC.find(findArg1).limit(limit)
+    
+    if cursor == None:
+        result['status'] = 0
+        result['num_results'] = 0
+        return jsonify(result)
+
+    numResults = 0
+    messages = []
+
+    for msg in cursor:
+        if hasLatLong and not checkIfInPolygon(msg, lat, lon):
+            continue
+
+        if hasHighLow and not checkIfInAltBounds(msg, high, low):
+            continue
+
+        numResults += 1
+        msg = changeStandardFields(msg)
+
+        messages.append(msg)
+
+    result['status'] = 0
+    result['results'] = messages
+    result['num_results'] = numResults
+    return jsonify(result)
+    
 def returnOne(findArg1, request):
     result = {}
     

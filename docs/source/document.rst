@@ -28,6 +28,7 @@ If the ``status`` code is 0, you will get an object that contains
 ``num_results`` and ``after`` fields.
 
 For example: ::
+
   http://127.0.0.1:5000/taf/kingtut
 
 returns: ::
@@ -97,8 +98,8 @@ Result and Results
 There are two basic types of rest queries allowed: those that return
 a single result, and those that may return more than a single result.
 Queries that can at most return a single result will return the
-result as a dictionary in the ``result`` field. If the query *might*
-return more than one result, it will return a list in the ``results``
+result as an object (dictionary) in the ``result`` field. If the query *might*
+return more than one result, it will return a list of objects in the ``results``
 field. Note the difference in name. If a query that can return more
 than one result only returns one result, it will still return a 
 ``results`` field with a list containing only one item in it. The documentation
@@ -134,7 +135,7 @@ We would get back a ``results`` field with a list of many results. ::
 
         << many results removed >>
         
-   ],
+      ],
     "status": 0
   }
 

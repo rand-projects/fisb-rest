@@ -202,3 +202,7 @@ def image():
 def imageId(id):
     id = id.replace('-','_')
     return util.returnMany({'type': 'IMAGE', 'unique_name': id}, request)
+
+@app.route("/static/legend")
+def staticLegend():
+    return util.returnStaticOne({'_id': 'LEGEND'}, request)
