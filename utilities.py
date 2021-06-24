@@ -129,7 +129,7 @@ def getStandardQueryItems(request):
 
     # 'long' parameter
     hasLong = False
-    longStr = request.args.get('long')
+    longStr = request.args.get('lon')
     longFloat = 0.0
 
     if longStr != None:
