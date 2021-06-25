@@ -161,7 +161,7 @@ query parameters only affect a small portion of requests. In the description
 of each request there will be a list of which parameters are associated with
 each request and what actions they perform.
 
-**after**
+**after=**
   Will return results that were created after this value. This value
   should be obtained **ONLY** from the ``after`` field of a returned
   JSON object. This field applies to all non-static rest queries.
@@ -174,7 +174,7 @@ each request and what actions they perform.
 
     http://127.0.0.1:5000/metar?after=2021-06-23T22:21:43.282000Z
 
-**high, low**
+**high=, low=**
   Will return objects only if they are between two altitude limits
   given in feet (inclusive). Only applies to objects that have a 
   graphic component. They must always occur together, must be 
@@ -205,7 +205,7 @@ each request and what actions they perform.
     http://127.0.0.1:5000/g-airmet?low=12000&high=17999
 
 
-**lat, lon**
+**lat=, lon=**
   If a latitude and a longitude is provided, AND the selected object is A
   polygon or a set of polygons, the object will be returned only if
   the latitude and longitude are within the polygon. You mist
@@ -226,7 +226,7 @@ each request and what actions they perform.
 
     http://127.0.0.1:5000/notam-d-sua?lat=40.1234&lon=-86.1234
 
-**limit**
+**limit=**
   Will limit the number of items returned to the specified
   amount. This only makes sense for those queries that may return
   more than one object. The number must be an integer >= 1.
@@ -255,17 +255,17 @@ Again, there are two types of REST requests, those that
 are FIS-B related, and those that are static. The fields
 mentioned below are only FIS-B related.
 
-**expiration_time**
+``"expiration_time"``
   Time the message should expire in ISO-8601 UTC. FISB Rest will
   not send an update when an object expires. That is up to you.
   All objects will have this field.
 
-**type**
+``"type"``
   Basic type of message. These are items like ``METAR``, ``TAF``, ``NOTAM``,
   ``WST``, ``G-AIRMET``, etc. The type of a message dictates the fields
   that it will have. All objects will have this field.
 
-**unique_name**
+``"unique_name"``
   This is a unique identifier within a particular 'type'. If you combine
   the 'type' and 'unique_name' strings you will get a primary key valid
   across all FISB objects. Internally, FISB Rest combines the
@@ -273,7 +273,7 @@ mentioned below are only FIS-B related.
   primary key.
   All objects will have this field.
 
-**geojson**
+``"geojson"``
   All graphical objects other than images (i.e. objects with vector data)
   will have a 'geojson' field. This is in standard geojson format.
   **ALL** geojson objects have at their outer layer a ``FeatureCollection``
@@ -283,12 +283,46 @@ mentioned below are only FIS-B related.
   make vector object processing more uniform.
 
   Polygon and Point objects are common. G-AIRMET can produce both Polygons
-  and LineStrings. Each ``FeatureCollection`` will only have one type of
+  and LineStrings. So can PIREPs (almost all PIREPs are point objects,
+  but you can have a 'route' PIREP which will be rendered as a
+  LineSting). Each ``FeatureCollection`` will only have one type of
   geometry.
 
-  The ``properties`` field will vary dependent on the 'type' of object. These
-  will be documented for each individual object type.
+  Also note that some objects can have more than one geometry. The principle
+  is that fields outside of a geojson field apply to the entire object,
+  but ``"properties"`` within a geojson object apply only to that geography.
+  They may also apply to the entire object (placed there to benefit a mapping
+  API), but they don't have to.
+  The ``"properties"`` field will vary dependent on the 'type' of object. These
+  will be documented for each individual object type except for a few common
+  items discussed here.
 
+  There are a number of ``"geojson"`` ``"properties"`` fields that are common
+  enough to be discussed now.
+
+    ``"altitudes"``
+      List of 4 items: Highest altitude, highest altitude
+      type (MSL or AGL), lowest altitude, and lowest altitude type (MSL or AGL).
+      Except for NOTAM-TMOA and NOTAM-TRA, both altitude types will be the same.
+
+    ``"start_time"``
+      Start time of the activity. This may be different than
+      any time mentioned in the encompassing object. May not have an
+      accompanying ``"stop_time"``.
+
+    ``"stop_time"``
+      Stop time of the activity. This may be different than
+      any time mentioned in the encompassing object. May not have an
+      accompanying ``"start_time"``.
+
+  A common scenario that occurs is in NOTAM-TFRs. Imagine a VIP is travelling
+  to a city, then going to a convention center to give a speech, and then
+  traveling back to the airport. A NOTAM-TFR will be issued with three
+  geographies: one each (with identical coordinates) for arrival and departure
+  at the airport, and one for the convention center. Each will have different
+  start and stop times, and the altitudes for the convention center speech
+  might be different than the airport altitudes.
+  
   An example of the 'geojson' field and the others described above is: ::
 
     {
@@ -309,8 +343,6 @@ mentioned below are only FIS-B related.
                       "type": "Point"
                   },
                   "properties": {
-                      "id": "K4M9",
-                      "name": "K4M9"
                   },
                   "type": "Feature"
               }
@@ -319,7 +351,7 @@ mentioned below are only FIS-B related.
       },
     }
 
-**cancel**
+``"cancel"``
   This field **only** applies to TWGO objects. This includes 'type' field values of:
 
   * ``NOTAM`` (all subtypes)
@@ -364,3 +396,553 @@ mentioned below are only FIS-B related.
         "expiration_time": "2021-06-21T17:23:18Z",
     }
 
+  Note that the NOTAM won't have a 'subtype' field. It isn't
+  needed. The 'unique_id' is sufficient and will work across 
+  all NOTAM subtypes.
+
+``"station"``
+  Some objects, such as CRL and RSR objects are dependent on a 
+  particular ground station. The best identifier for the station
+  is its latitude and longitude. The value of the ``"station"``
+  field is the latitude and longitude combined with a tilde
+  character such as ``'40.0383~-86.255593'``. One advantage of
+  this scheme is that the standard in some cases requires you
+  to show the latitude and longitude of all stations, and 
+  you can un-parse the ground station id to get this information.
+
+REST API and Message Descriptions
+---------------------------------
+
+All items
+^^^^^^^^^
+::
+
+  /all
+
+Will return all current reports. This is essentially a dump of the
+database. 
+
+The way this is typically used is to perform an ``/all`` at the start,
+then use use the ``"after"`` field to get periodic updates. If you don't
+want to get all results at once, you can use the 'after=' and 'limit='
+query parameters together.
+
+METARs
+^^^^^^
+::
+
+  /metar
+  /metar/<4 character id>
+
+Return all METAR reports or a single METAR report.
+
+Example: ::
+
+  {
+        "type": "METAR",
+        "unique_name": "KLAF"
+        "observation_time": "2021-06-24T16:54:00Z",
+        "contents": "METAR KLAF 241654Z VRB06G17KT 10SM CLR 28/16
+                     A3004 RMK AO2 SLP168\n     T02780161=",
+        "expiration_time": "2021-06-24T18:54:00Z",
+        "geojson": {
+            "features": [
+                {
+                    "geometry": {
+                        "coordinates": [
+                            -86.9475,
+                            40.4125
+                        ],
+                        "type": "Point"
+                    },
+                    "properties": {
+                        "id": "KLAF",
+                        "name": "KLAF"
+                    },
+                    "type": "Feature"
+                }
+            ],
+            "type": "FeatureCollection"
+        },
+  }
+
+Notes:
+
+* Will have a ``"geojson"`` field if configured for locations. This
+  will always be a 'Point'.
+* ``"observation_time"``: Time the observation was made.
+* The expiration time is typically 2 hours after the observation time.
+
+TAFs
+^^^^
+::
+
+  /taf
+  /taf/<4 character id>
+
+Return all TAF reports, or a single report.
+
+Example: ::
+
+  {
+    "type": "TAF",
+    "unique_name": "KIND",
+    "issued_time": "2021-06-24T11:20:00Z",
+    "valid_period_begin_time": "2021-06-24T12:00:00Z",
+    "valid_period_end_time": "2021-06-25T18:00:00Z"
+    "contents": "TAF KIND 241120Z 2412/2518 16007KT P6SM FEW200\n
+                 FM241900 19012G20KT P6SM SCT250\n
+                 FM250600 18010KT P6SM VCSH OVC100\n
+                 FM251500 19014G22KT P6SM VCSH OVC045\n
+                 FM251700 20014G23KT P6SM VCSH OVC028=",
+    "expiration_time": "2021-06-25T18:00:00Z",
+    "geojson": {
+        "features": [
+            {
+                "geometry": {
+                    "coordinates": [
+                        -86.2816,
+                        39.72518
+                    ],
+                    "type": "Point"
+                },
+                "properties": {
+                    "id": "KIND",
+                    "name": "KIND"
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+    },
+  }
+
+Notes:
+
+* Will have a ``"geojson"`` field if configured for locations. This
+  will always be a 'Point'.
+* ``"issued_time"``: Time the forecast was issued by NWS.
+* ``"valid_period_begin_time"``: Starting time of the forecast.
+* ``"valid_period_end_time"``: Ending time of the forecast. This is
+  also the expiration time.
+
+Winds Aloft Forecasts
+^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  /wind-06
+  /wind-06/<3 character id>
+  /wind-12
+  /wind-12/<3 character id>
+  /wind-24
+  /wind-24/<3 character id>
+
+Return winds aloft forecast for all stations or a single station. 
+Winds aloft forecasts are issued 6, 12, and 24 hours in advance.
+Wind forecasts use a 3 character id, rather than 4.
+
+Example: ::
+
+  {
+    "type": "WINDS_12_HR",
+    "unique_name": "CMH",
+    "model_run_time": "2021-06-24T12:00:00Z",
+    "issued_time": "2021-06-24T13:58:00Z",
+    "valid_time": "2021-06-25T00:00:00Z"
+    "for_use_from_time": "2021-06-24T21:00:00Z",
+    "for_use_to_time": "2021-06-25T06:00:00Z",
+    "contents": "   1919 2122+13 2712+11 9900+04 2606-09 3109-19
+                    292735 312945 315757",
+    "expiration_time": "2021-06-25T06:00:00Z",
+  }
+
+Notes:
+
+* Will have a 'Point' ``"geojson"`` field if configured for location.
+* The header is not provided since there are multiple options
+  for display. A typical header could look like: ::
+
+    3000    6000    9000   12000   18000   24000  30000  34000  39000
+    1919 2219+17 2217+12 2208+04 3012-09 2819-20 281435 363145 317257
+* ``"model_run_time"``: Time the winds aloft model was run to generate
+  the report.
+* ``"issued_time``": When the report was issued.
+* ``"valid_time``": Time at which the forecast is designed to model. This
+  is a single point in time.
+* ``"for_use_from_time"``: Starting time the forecast can be used.
+* ``"for_use_to_time"``: Time the forecast should no longer be used.
+  This is also the expiration time.
+
+PIREPs
+^^^^^^
+
+::
+
+  /pirep
+
+Returns all available PIREPs.
+
+Example: ::
+
+  {
+    "type": "PIREP",
+    "unique_name": "UAMSN/OVMSN080020/TM1940/FL220/TPE545/TAM15/
+                    ICLGTRIMEDURD220-180"
+    "contents": "PIREP MSN 241940Z MSN UA /OV MSN080020/TM 1940/FL220/TP
+                 E545/TA M15/IC LGT RIME DURD 220-180",
+    "expiration_time": "2021-06-24T21:40:00Z",
+    "fl": "220",
+    "ic": "LGT RIME DURD 220-180",
+    "ov": "MSN080020",
+    "report_time": "2021-06-24T19:40:00Z",
+    "report_type": "UA",
+    "station": "MSN",
+    "ta": "M15",
+    "tm": "1940",
+    "tp": "E545",
+    "geojson": {
+        "features": [
+            {
+                "geometry": {
+                    "coordinates": [
+                        -88.895286,
+                        43.218243
+                    ],
+                    "type": "Point"
+                },
+                "properties": {
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+      },
+  }
+
+Notes:
+
+* Will have a ``"geojson"`` field if configured for location. This is most
+  commonly a 'Point', but in the case of a route, may also be a LineString.
+  While FIS-B Decode can parse about 90-95% of all locations, it can not
+  parse them all. PIREPs (especially by tower controllers) do not always
+  follow a set format, since they can be hand entered.
+* ``"station"``: Nearest weather reporting location.
+* ``"report_type"``: Either ``UA`` for normal PIREP or ``UUA`` for urgent.
+* ``"report_time"``: Time the report was made. There are two ways FIS-B
+  Decode can be configured. The way the standard suggests is to just keep
+  the report active until an hour or so after it is last transmitted.
+  This can result in PIREPs hanging around for 4 hours or more. It can
+  also be configured to delete the PIREP so many minutes after the report
+  time (2 hours is a good value). This is the preferred method.
+* The identifier immediately after 'PIREP' ('PIREP MSN' in our example)
+  is totally made-up garbage by the FIS-B creator. Do not use it. The
+  ``"station"`` field is from the FAA and is safe to use.
+* The report is parsed into its basic fields. If a field name is not
+  in the report, it will not be listed. These are:
+
+    * ``"ov"``: Location of the PIREP.
+    * ``"tm"``: Time the PIREP activity occurred or was reported.
+    * ``"fl"``: Flight level.
+    * ``"tp"``: Type of aircraft.
+    * ``"tb"``: Turbulence report.
+    * ``"sk"``: Sky conditions.
+    * ``"rm"``: Remarks.
+    * ``"wx"``: Flight visibility and flight weather.
+    * ``"ta"``: Temperature.
+    * ``"wv"``: Wind direction and speed.
+    * ``"ic"``: Icing report.
+
+SIGMET, AIRMET, WST, CWA
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  /sigmet
+  /airmet
+  /wst
+  /cwa
+
+Provides all available SIGMETs, AIRMETs, WSTs (Convective SIGMETS), and
+CWAs (Center Weather Advisory). From a returned object perspective,
+they are all identical except for their subject matter.
+
+One important thing to remember is that all of these objects can
+have both a text and object portion. Only the text portion is mandatory.
+Per the standard, if a text portion is received, it is immediately sent
+out. If a graphic portion arrives, it is combined with the text portion
+and both are sent out as a single report. If a graphic portion never
+gets a matching text portion, it is never sent out.
+
+In the example below, the only difference if this was only a text only
+AIRMET would be that the ``"geojson"`` field would be missing.
+
+Example: ::
+
+  {
+    "type": "AIRMET",
+    "unique_name": "21-9178"
+    "issued_time": "2021-06-24T20:31:00Z",
+    "for_use_from_time": "2021-06-24T20:45:00Z",
+    "for_use_to_time": "2021-06-25T03:00:00Z",
+    "contents": "AIRMET KBOS 242031 BOST WA 242045\nAIRMET TANGO UPDT
+                 3 FOR TURB VALID UNTIL 250300\nAIRMET TURB...ME NH VT
+                 MA RI CT NY LO NJ PA OH LE WV MD DC DE VA\nNC SC GA FL
+                 AND CSTL WTRS\nFROM 80NW PQI TO CON TO 80ESE SIE TO
+                 30ENE ILM TO 20W CTY TO\n130ESE LEV TO 40W CEW TO 50SW
+                 PZD TO GQO TO HMV TO HNN TO CVG TO\nFWA TO 30SE ECK TO
+                 YOW TO YSC TO 80NW PQI\nMOD TURB BTN FL270 AND FL430.
+                 CONDS CONTG BYD 03Z THRU 09Z.",
+    "expiration_time": "2021-06-25T03:00:00Z",
+    "geojson": {
+        "features": [
+            {
+                "geometry": {
+                    "coordinates": [
+                        [-69.494019, 47.707443],
+                        [-71.575241, 43.219528],
+                        [-73.22525, 38.574371],
+                        [-77.313538, 34.541016],
+                        [-83.431549, 29.597855],
+                        [-87.830887, 28.326874],
+                        [-87.454605, 30.823517],
+                        [-84.979935, 31.063843],
+                        [-85.152969, 34.961243],
+                        [-82.128983, 36.436844],
+                        [-82.025986, 38.753586],
+                        [-84.70253, 39.015884],
+                        [-85.187988, 40.979004],
+                        [-82.235413, 42.900925],
+                        [-75.896301, 45.441513],
+                        [-71.690598, 45.43808],
+                        [-69.494019, 47.707443]
+                      ],
+                    "type": "Polygon"
+                },
+                "properties": {
+                    "altitudes": [
+                        43000,
+                        "MSL",
+                        27000,
+                        "MSL"
+                    ],
+                    "id": "21-9178",
+                    "start_time": "2021-06-24T20:45:00Z",
+                    "stop_time": "2021-06-25T03:00:00Z"
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+    },
+  }
+
+Notes:
+
+* ``"cancel"``: Present only when cancelled. Always check for this first
+  and delete the report. No other processing required.
+* ``"issued_time``": When the report was issued.
+* ``"valid_time``": Time at which the forecast is designed to model. This
+  is a single point in time.
+* ``"for_use_from_time"``: Starting time the forecast can be used.
+* ``"for_use_to_time"``: Time the forecast should no longer be used.
+  This is also the expiration time.
+* **lat=** and **lon=** are valid query strings. If present, only those
+  results which contain the supplied point will be returned.
+* **high=** and **low=** are valid query strings. If present, only those
+  results that fall within a certain altitude range will be returned.
+
+G-AIRMET
+^^^^^^^^
+
+::
+
+  /g-airmet
+  /g-airmet-00
+  /g-airmet-03
+  /g-airmet-06
+
+Return all G-AIRMETS. The 00, 03, and 06 variants will only return G-AIRMETs
+of that type.
+
+Example: ::
+
+  {
+    "type": "G_AIRMET",
+    "unique_name": "21-10892"
+    "subtype": 0,
+    "issued_time": "2021-06-25T02:45:00Z",
+    "for_use_from_time": "2021-06-25T03:00:00Z",
+    "for_use_to_time": "2021-06-25T06:00:00Z",
+    "expiration_time": "2021-06-25T06:00:00Z",
+    "geojson": {
+        "features": [
+            {
+                "geometry": {
+                    "coordinates": [
+                        [-84.529495, 46.609497],
+                        [-86.84967, 45.799942],
+                        [-87.399673, 44.399872],
+                        [-84.859772, 43.919907],
+                        [-82.389908, 45.259552],
+                        [-84.529495, 46.609497]
+                    ],
+                    "type": "Polygon"
+                },
+                "properties": {
+                    "altitudes": [
+                        2000,
+                        "AGL",
+                        0,
+                        "AGL"
+                    ],
+                    "element": "LLWS",
+                    "id": "21-10892",
+                    "start_time": "2021-06-25T03:00:00Z",
+                    "stop_time": "2021-06-25T06:00:00Z"
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+    },
+  }
+
+Notes:
+
+* ``"cancel"``: Present only when cancelled. Always check for this first
+  and delete the report. No other processing required.
+* ``"subtype"``: One of 0, 3, or 6 dependent if this is a 00, 03, or 06
+  hour G-AIRMET. '/g-airmet' will select all of these. '/g-airmet-00', 
+  '/g-airmet-03', and '/g-airmet-06' will only select a particular type.
+* ``"issued_time``": When the report was issued.
+* ``"for_use_from_time"``: Starting time the forecast can be used.
+* ``"for_use_to_time"``: Time the forecast should no longer be used.
+  This is also the expiration time.
+* There is only a single graphical entry for each G-AIRMET.
+* Most G-AIRMETs return Polygons, but freezing level G-AIRMETs
+  may return a Polygon or LineString.
+* The ``"properties"`` geojson field may contain the following fields:
+   ``"conditions"``
+      If the reason for the G-AIRMET is IFR or mountain Obscuration
+      conditions, this field will list the conditions responsible. This
+      will be a list with one or more of the following elements:
+      
+        * ``'UNSPCFD'``: Unspecified
+        * ``'ASH'``: Ash
+        * ``'DUST'``: Dust
+        * ``'CLOUDS'``: Clouds
+        * ``'BLSNOW'``: Blowing snow
+        * ``'SMOKE'``: Smoke
+        * ``'HAZE'``: Haze
+        * ``'FOG'``: Fog
+        * ``'MIST'``: Mist
+        * ``'PCPN'``: Precipitation
+
+   ``"element"``
+      Single string present for each G-AIRMET which describes the reason
+      it was issued. These will be one of:
+      
+        * ``'TURB'``: Turbulence
+        * ``'LLWS'``: Low level wind shear
+        * ``'SFC'``: Strong surface winds
+        * ``'ICING'``: Icing
+        * ``'FRZLVL'``: Freezing Level
+        * ``'IFR'``: IFR conditions
+        * ``'MTN'``: Mountain Obscuration
+
+* **lat=** and **lon=** are valid query strings. If present, only those
+  results which contain the supplied point will be returned.
+* **high=** and **low=** are valid query strings. If present, only those
+  results that fall within a certain altitude range will be returned.
+
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
+
+xxx
+^^^
+
+::
+
+
+Example: ::
+
+Notes:
