@@ -64,19 +64,19 @@ def wind24(id):
 
 @app.route("/sigmet")
 def sigmet():
-    return util.returnMany({'type': 'SIGMET'}, request)
+    return util.returnMany({'type': 'SIGMET'}, request, ['station'])
 
 @app.route("/airmet")
 def airmet():
-    return util.returnMany({'type': 'AIRMET'}, request)
+    return util.returnMany({'type': 'AIRMET'}, request, ['station'])
 
 @app.route("/wst")
 def wst():
-    return util.returnMany({'type': 'WST'}, request)
+    return util.returnMany({'type': 'WST'}, request, ['station'])
 
 @app.route("/cwa")
 def cwa():
-    return util.returnMany({'type': 'CWA'}, request)
+    return util.returnMany({'type': 'CWA'}, request, ['station'])
 
 @app.route("/rsr")
 def rsr():
@@ -88,19 +88,19 @@ def service_status():
 
 @app.route("/g-airmet")
 def g_airmet():
-    return util.returnMany({'type': 'G_AIRMET'}, request)
+    return util.returnMany({'type': 'G_AIRMET'}, request, ['station'])
 
 @app.route("/g-airmet-00")
 def g_airmet00():
-    return util.returnMany({'type': 'G_AIRMET', 'subtype': 0}, request)
+    return util.returnMany({'type': 'G_AIRMET', 'subtype': 0}, request, ['station'])
 
 @app.route("/g-airmet-03")
 def g_airmet03():
-    return util.returnMany({'type': 'G_AIRMET', 'subtype': 3}, request)
+    return util.returnMany({'type': 'G_AIRMET', 'subtype': 3}, request, ['station'])
 
 @app.route("/g-airmet-06")
 def g_airmet06():
-    return util.returnMany({'type': 'G_AIRMET', 'subtype': 6}, request)
+    return util.returnMany({'type': 'G_AIRMET', 'subtype': 6}, request, ['station'])
 
 @app.route("/fis-b-unavailable")
 def fisb_unavailable():

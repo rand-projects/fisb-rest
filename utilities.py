@@ -201,9 +201,15 @@ def getStandardQueryItems(request):
     return hasError, errorString, dt, limitInt, \
         hasLatLong, latFloat, longFloat, hasHighLow, high, low
 
-def changeStandardFields(msg):
+def changeStandardFields(msg, delFields):
     msg = convertMsgDtToIsoString(msg)
 
+    # Delete any fields we don't need. CRL station is common
+    # for G-AIRMET, SIGMET, AIRMET, WST, CWA.
+    for field in delFields:
+        if field in msg:
+            del msg[field]
+            
     del msg['_id']
     if 'digest' in msg:
         del msg['digest']
@@ -252,7 +258,7 @@ def checkIfInAltBounds(msg, high, low):
 
     return False
 
-def returnStaticOne(findArg1, request):
+def returnStaticOne(findArg1, request, delFields=[]):
     result = {}
     
     hasError, errorString, _, _, \
@@ -277,14 +283,14 @@ def returnStaticOne(findArg1, request):
         result['num_results'] = 0
         return jsonify(result)
 
-    msg = changeStandardFields(msg)
+    msg = changeStandardFields(msg, delFields)
 
     result['status'] = 0
     result['result'] = msg
     result['num_results'] = 1
     return jsonify(result)
     
-def returnStaticMany(findArg1, request):
+def returnStaticMany(findArg1, request, delFields=[]):
     result = {}
 
     hasError, errorString, _, limit, \
@@ -313,7 +319,7 @@ def returnStaticMany(findArg1, request):
             continue
 
         numResults += 1
-        msg = changeStandardFields(msg)
+        msg = changeStandardFields(msg, delFields)
 
         messages.append(msg)
 
@@ -322,7 +328,7 @@ def returnStaticMany(findArg1, request):
     result['num_results'] = numResults
     return jsonify(result)
     
-def returnOne(findArg1, request):
+def returnOne(findArg1, request, delFields=[]):
     result = {}
     
     hasError, errorString, afterDt, _, \
@@ -350,7 +356,7 @@ def returnOne(findArg1, request):
         result['after'] = dtToIsoString(afterDt)
         return jsonify(result)
 
-    msg = changeStandardFields(msg)
+    msg = changeStandardFields(msg, delFields)
     afterStr = msg['insert_time']
     del msg['insert_time']
 
@@ -360,7 +366,7 @@ def returnOne(findArg1, request):
     result['after'] = afterStr
     return jsonify(result)
     
-def returnMany(findArg1, request):
+def returnMany(findArg1, request, delFields=[]):
     result = {}
 
     hasError, errorString, afterDt, limit, \
@@ -393,7 +399,7 @@ def returnMany(findArg1, request):
             continue
 
         numResults += 1
-        msg = changeStandardFields(msg)
+        msg = changeStandardFields(msg, delFields)
 
         afterStr = msg['insert_time']
         del msg['insert_time']
