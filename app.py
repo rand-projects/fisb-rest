@@ -108,47 +108,55 @@ def fisb_unavailable():
 
 @app.route("/notam-tfr")
 def notam_tfr():
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'TFR'}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'TFR'}, request, ['station'])
 
 @app.route("/notam")
 def notam():
-    return util.returnMany({'type': 'NOTAM'}, request)
+    return util.returnMany({'type': 'NOTAM'}, request, ['station'])
 
 @app.route("/notam/<id>")
 def notam_id(id):
-    return util.returnMany({'type': 'NOTAM', 'location': id.upper()}, request)
+    return util.returnMany({'type': 'NOTAM', 'location': id.upper()}, request, ['station'])
 
 @app.route("/notam-d")
 def notam_d():
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'D'}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'D'}, request, ['station'])
 
 @app.route("/notam-d/<id>")
 def notam_d_id(id):
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'D', 'location': id.upper()}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'D', 'location': id.upper()}, request, ['station'])
 
 @app.route("/notam-d-sua")
 def notam_d_sua():
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'D-SUA'}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'D-SUA'}, request, ['station'])
 
 @app.route("/notam-d-sua/<id>")
 def notam_d_sua_id(id):
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'D-SUA', 'location': id.upper()}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'D-SUA', 'location': id.upper()}, request, ['station'])
 
 @app.route("/notam-fdc")
 def notam_fdc():
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'FDC'}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'FDC'}, request, ['station'])
 
 @app.route("/notam-fdc/<id>")
 def notam_fdc_id(id):
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'FDC', 'location': id.upper()}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'FDC', 'location': id.upper()}, request, ['station'])
 
 @app.route("/notam-tmoa")
 def notam_tmoa():
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'TMOA'}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'TMOA'}, request, ['station'])
+
+@app.route("/notam-tmoa/<id>")
+def notam_tmoa_id(id):
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'TMOA', 'location': id.upper()}, request, ['station'])
 
 @app.route("/notam-tra")
 def notam_tra():
-    return util.returnMany({'type': 'NOTAM', 'subtype': 'TRA'}, request)
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'TRA'}, request, ['station'])
+
+@app.route("/notam-tra/<id>")
+def notam_tra_id(id):
+    return util.returnMany({'type': 'NOTAM', 'subtype': 'TRA', 'location': id.upper()}, request, ['station'])
 
 @app.route("/cancel-notam")
 def notam_cancel():

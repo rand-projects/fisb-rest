@@ -582,13 +582,14 @@ PIREPs
   /pirep
 
 Returns all available PIREPs.
+Will have a ``"geojson"`` field if configured for location. This is most
+commonly a 'Point', but in the case of a route, may also be a LineString.
 
-Example: ::
+Example of a PIREP that is a Point: ::
 
   {
     "type": "PIREP",
-    "unique_name": "UAMSN/OVMSN080020/TM1940/FL220/TPE545/TAM15/
-                    ICLGTRIMEDURD220-180"
+    "unique_name": "djfHdke8mQ2Z"
     "contents": "PIREP MSN 241940Z MSN UA /OV MSN080020/TM 1940/FL220/TP
                  E545/TA M15/IC LGT RIME DURD 220-180",
     "expiration_time": "2021-06-24T21:40:00Z",
@@ -620,11 +621,45 @@ Example: ::
       },
   }
 
+Example of a PIREP that is a route with a geojson type of LineString: ::
+
+  {                                                                       
+    "type": "PIREP",
+    "unique_name": "KQeZQflpleq1"
+    "ov": "ACO090020-ACO310010",
+    "report_time": "2021-06-25T10:32:00Z",
+    "report_type": "UA",
+    "station": "AKR",
+    "tb": "LGT-MOD 350-390",
+    "tm": "1032",
+    "tp": "NMRS",
+    "fl": "350",
+    "contents": "PIREP ACO 251032Z AKR UA /OV ACO090020-ACO310010
+                 /TM 1032/FL350/TP NMRS/TB LGT-MOD 350-390",
+    "expiration_time": "2021-06-25T12:32:00Z",
+    "geojson": {
+        "features": [
+            {
+                "geometry": {
+                    "coordinates": [
+                        [-80.765163, 41.156786],
+                        [-81.38991, 41.194716]                                               
+                    ],
+                    "type": "LineString"
+                },
+                "properties": {
+                    "id": "KQeZQflpleq1"
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+    },
+  }
+
 Notes:
 
-* Will have a ``"geojson"`` field if configured for location. This is most
-  commonly a 'Point', but in the case of a route, may also be a LineString.
-  While FIS-B Decode can parse about 90-95% of all locations, it can not
+* While FIS-B Decode can parse about 90-95% of all locations, it can not
   parse them all. PIREPs (especially by tower controllers) do not always
   follow a set format, since they can be hand entered.
 * ``"station"``: Nearest weather reporting location.
@@ -812,7 +847,7 @@ Notes:
 
 * ``"cancel"``: Present only when cancelled. Always check for this first
   and delete the report. No other processing required.
-* ``"subtype"``: One of 0, 3, or 6 dependent if this is a 00, 03, or 06
+* ``"subtype"``: One of 0, 3, or 6, dependent if this is a 00, 03, or 06
   hour G-AIRMET. '/g-airmet' will select all of these. '/g-airmet-00', 
   '/g-airmet-03', and '/g-airmet-06' will only select a particular type.
 * ``"issued_time``": When the report was issued.
@@ -857,45 +892,478 @@ Notes:
   results that fall within a certain altitude range will be returned.
 
 
-xxx
-^^^
+NOTAM (in general)
+^^^^^^^^^^^^^^^^^^
 
 ::
 
+/notam
+/notam/<4 character id>
 
-Example: ::
+Lists all NOTAMs of all types. If an id is specified, will find all
+NOTAMs associated with that id (i.e. the ``"location"`` field inside
+a NOTAM). Not all NOTAMs have a location.
+
+No examples will be given for this section. See the more detailed types
+of NOTAMs for examples.
+
+There are basically two types of FIS-B NOTAMs. NOTAM-TFRs and all the rest.
+NOTAM-TFRs in FIS-B are repackaged by the FIS-B creator and have differences
+with the other NOTAMs in terms of format.
+
+I further divide NOTAM-Ds into two type: regular NOTAM-Ds and NOTAM-D-SUA.
+The NOTAM-D-SUAs are different, because they have an optional location field
+that is not produced by FIS-B, but loaded as an auxillary file. They also
+have some unique characteristics which must be considered.
+
+Fields common to all NOTAMs:
+
+* ``"subtype"``: The type of NOTAM. Will be one of:
+
+  * ``"TFR"``: NOTAM-TFR
+  * ``"D"``: NOTAM-D
+  * ``"D-SUA"``: NOTAM-D with SUA information.
+  * ``"FDC"``: NOTAM-FDC
+
+* ``"number"``: This is the 'official' number of the NOTAM. It is what
+  should be shown to users. Do not use the ``"unique_name"``.
 
 Notes:
 
-xxx
-^^^
+* ``"cancel"``: Present only when cancelled. Always check for this first
+  and delete the report. No other processing required.
+
+  
+NOTAM-TFR
+^^^^^^^^^
 
 ::
 
+/notam-tfr
+
+NOTAM-TFRs may or may not be associated with a geojson object. If they
+are, the object may have multiple components.
+
+NOTAM-TFRs are truncated after a certain number of characters and will end with
+the text ``'(INCMPL)'``.
 
 Example: ::
 
+  {
+    "type": "NOTAM",
+    "unique_name": "0-5116"
+    "subtype": "TFR",
+    "number": "0/5116",
+    "contents": "NOTAM-TFR 0/5116 220551Z PART 1 OF 4 SECURITY..SPECIAL
+                SECURITY INSTRUCTIONS FOR UNMANNED AIRCRAFT SYSTEM (UAS)
+                OPERATIONS FOR MULTIPLE LOCATIONS NATIONWIDE. THIS NOTAM
+                REPLACES NOTAM FDC 9/7752 TO PROVIDE UPDATED INSTRUCTIONS.
+                PURSUANT TO 49 U.S.C. SECTION 40103(B)(3), THE FAA CLASSIFIES
+                THE AIRSPACE DEFINED IN THIS NOTAM AND IN FURTHER DETAIL AT
+                THE FAA WEBSITE IDENTIFIED BELOW AS 'NATIONAL DEFENSE
+                AIRSPACE'. OPERATORS WHO DO NOT COMPLY WITH THE FOLLOWING
+                PROCEDURES MAY FACE THE FOLLOWING ENFORCEMENT ACTIONS: THE
+                UNITED STATES GOVERNMENT MAY PURSUE CRIMINAL CHARGES,
+                INCLUDING CHARGES UNDER 49 U.S.C. SECTION 46307; AND THE
+                FAA MAY TAKE ADMINISTRATIVE ACTION, INCLUDING IMPOSING
+                CIVIL PENALTIES AND REVOKING FAA CERTIFICATES OR
+                AUTHORIZATIONS TO OPERATE UNDER TITLE 49 U.S.C. SECTIONS
+                44709 AND 46301. IN ADDITION, PURSUANT TO 10 U.S.C. SECTION
+                130I, 50 U.S.C. SECTION 2661, AND 6 U.S.C. SECTION 124N, THE
+                DEPARTMENT OF DEFENSE (DOD), DEPARTMENT OF ENERGY (DOE),
+                DEPARTMENT OF HOMELAND SECURITY (DHS), OR DEPARTMENT OF
+                JUSTICE (DOJ), RESPECTIVELY , MAY TAKE SECURITY ACTION AT OR
+                IN THE VICINITY OF SPECIFIC LOCATIONS PRE-COORDINATED WITH
+                THE FAA WITHIN A SUBSET OF THE DEFINED AIRSPACE, OR IN
+                RESTRICTED OR PROHIBITED AIRSPACE ADJACENT TO SUCH LOCATIONS,
+                THAT RESULTS IN THE INTERFERENCE, DISRUPTION, SEIZURE,
+                2009011200-2109011159 END PART 1 OF 4 !FDC 0/5116 FDC PART
+                2 OF 4 SECURITY..SPECIAL SECURITY INSTRUCTIONS FOR UNMANNED
+                DAMAGING, OR DESTRUCTION OF UNMANNED AIRCRAFT CONSIDER(INCMPL)",
+    "start_of_activity_time": "2020-09-01T12:00:00Z",
+    "end_of_validity_time": "2021-09-01T11:59:00Z",
+    "expiration_time": "2021-06-26T02:24:57Z",
+    }
+
 Notes:
 
-xxx
-^^^
+* ``"cancel"``: Present only when cancelled. Always check for this first
+  and delete the report. No other processing required.
+
+NOTAM-D and NOTAM-FDC
+^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
+/notam-d
+/notam-d/<4 character id>
+/notam-fdc
+/notam-fdc/<4 character id>
 
-Example: ::
+NOTAM-D (distant) and NOTAM-FDC (Flight Data Center)
+have identical formats other than 
+the subtypes. Both may have geojson 'Point' objects.
+
+These objects (as well as the NOTAM-D-SUA, NOTAM-TMOA and
+NOTAM-TRA objects to be described later) will have the following
+fields:
+
+* ``"accountable"``: Accountable 
+* ``"affected"``: Airport affected.
+* ``"keyword"``: Notam type. For non-NOTAM-FDCs, one of:
+
+  * RWY: Runway
+  * TWY: Taxiway
+  * APRON: Apron/Ramp
+  * AD: Aerodrome
+  * OBST: Obstruction
+  * NAV: Navigation Aid
+  * COM: Communications
+  * SVC: Services
+  * AIRSPACE: Airspace
+  * OPD: Obstacle Departure Procedure
+  * SID: Standard Instrument Departure
+  * STAR: Standard Terminal Arrival
+
+  For NOTAM-FDCs, one of:
+  
+  * CHART: Chart
+  * DATA: Data
+  * IAP: Instrument Approach Procedure
+  * VFP: Visual Flight Procedures
+  * ROUTE: Route
+  * SPECIAL: Special
+  * SECURITY: Security
+  * U: Unverified Aeronautical information
+  * O: Other
+    
+Example NOTAM-D: ::
+
+  {
+    "type": "NOTAM",
+    "unique_name": "21-12579-KHFY"
+    "keyword": "OBST",
+    "location": "KHFY",
+    "number": "06/579",
+    "start_of_activity_time": "2021-06-24T17:47:00Z",
+    "accountable": "HUF",
+    "affected": "HFY",
+    "contents": "!HUF 06/579 HFY OBST TOWER LGT (ASR 1002451)
+                 393252.90N0861537.20W (9.3NM WSW HFY) 1042.7FT (294.9FT AGL)
+                 U/S 2106241747-2109220400",
+    "end_of_validity_time": "2021-09-22T04:00:00Z",
+    "expiration_time": "2021-09-22T04:00:00Z",
+    "geojson": {
+          "features": [
+            {
+                "geometry": {
+                    "coordinates": [-86.087494, 39.626999],
+                    "type": "Point"
+                },
+                "properties": {
+                    "airport_id": "KHFY",
+                    "altitudes": [0, "AGL", 0, "AGL"],
+                    "id": "21-12579-KHFY",
+                    "start_time": "2021-06-24T17:47:00Z",
+                    "stop_time": "2021-09-22T04:00:00Z"
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+    },
+  }
+
+Example NOTAM-FDC: ::
+
+  {
+    "type": "NOTAM",
+    "unique_name": "1-8239"
+    "subtype": "FDC",
+    "keyword": "IAP",
+    "location": "KSBN",
+    "number": "1/8239",
+    "accountable": "FDC",
+    "affected": "SBN",
+    "contents": "!FDC 1/8239 SBN IAP SOUTH BEND INTL, SOUTH BEND, IN.\n
+                 RNAV (GPS) RWY 9R, AMDT 1A...\nLPV DA NA ALL CATS AND
+                 LNAV/VNAV DA NA ALL CATS.\n2106071415-2306071415EST",
+    "start_of_activity_time": "2021-06-07T14:15:00Z",
+    "end_of_validity_time": "2023-06-07T14:15:00Z",
+    "expiration_time": "2023-06-07T14:15:00Z",
+  }
 
 Notes:
 
-xxx
-^^^
+* ``"cancel"``: Present only when cancelled. Always check for this first
+  and delete the report. No other processing required.
+* Since airports are located on the ground, the ``"altitudes"`` list will
+  always show 0 AGL for hight and low altitudes.
+* These NOTAMs will have only 'Point' geojson objects if they have any at all.
+
+NOTAM-D-SUA
+^^^^^^^^^^^
 
 ::
 
+/notam-d-sua
+/notam-d-sua/<4 character ARTCC location>
+
+NOTAM-D SUAs are used to activate special use airspace that, in addition to
+regularly active times, also have the provision 'other times by NOTAM'.
+
+Each NOTAM-D SUA will declare an airspace it applies to, and at what altitudes
+it is valid for. The start and stop times are also given. 
+
+Most special use airspaces have a single geographical region. But many do not. They
+may have up to ten or so geographic
+regions that all go under a single name. And each geographic area may
+have different times and different altitudes associated with it. But the NOTAM
+will only refer to the entire SUA and will only provide one set of altitudes.
+To be on the safe side, we assume the NOTAM applies to all geographic portions
+and will store the altitudes, but not treat them as the whole truth.
+
+The NOTAM-D SUA never provides a graphic portion, but it is possible to load
+the database with SUA graphic information. See the 'fisb-decode' documentation
+for more about this.
+
+Also note that while the NOTAM usually indicates a well-known area that is
+documented in SUA definition files, the area may not be in the file
+(aerial refueling is common), or sometimes they make something up like
+'RANDOM AIR REFUELING FKL-THS'.
+
+Fields unique to NOTAM-D SUA:
+
+  * ``"airspace"``: This is the special use airspace official name.
+  * ``"altitude_text"``: A text string that defines the altitudes to 
+    be used. See the caution about this under the ``"altitudes"`` item
+    below.
+  * ``"altitudes"``: This is in the exact same form as the altitudes
+    field for other objects, but it isn't quite the same. The first
+    item is the high altitude, followed by the high altitude type, then
+    the low altitude and low altitude type (just like all the other
+    ``"altitudes"`` fields).
+
+    However, remember that special use airspaces may have multiple
+    geographic areas, each with their own altitudes. We really can't be
+    sure how that applies in a given NOTAM-D SUA. That is why, unlike other
+    ``"altitudes"`` fields, this one is placed at the top level of the object
+    and not inside a ``"geojson"`` field. A good display program would point
+    this out when displaying any FAA SUA altitude information.
+
+    Also, it is not clear what altitudes are AGL or MSL. Flight levels are 
+    considered MSL, ``SFC`` is considered AGL, but the usual reference is just
+    ``'FT'``. If we can't determine AGL or MSL, we are forced to use what
+    they tell use, and that is ``'FT'``.
 
 Example: ::
 
+  {
+    "type": "NOTAM",
+    "unique_name": "21-12582-KZKC"
+    "subtype": "D-SUA",
+    "keyword": "AIRSPACE",
+    "location": "KZKC",
+    "number": "06/582",
+    "accountable": "SUAC",
+    "affected": "ZKC",
+    "airspace": "R4501F",
+    "altitude_text": "SFC-3200FT",
+    "altitudes": [
+        3200,
+        "FT",
+        0,
+        "AGL"
+    ],
+    "start_of_activity_time": "2021-06-25T23:00:00Z",
+    "end_of_validity_time": "2021-06-26T05:00:00Z",
+    "contents": "!SUAC 06/582 ZKC AIRSPACE R4501F ACT SFC-3200FT 2106252300-2106260500",
+    "expiration_time": "2021-06-26T05:00:00Z",
+    "geojson": {
+        "features": [
+            {
+                "geometry": {
+                    "coordinates": [
+                        [-92.151396, 37.68334],
+                        [-92.181396, 37.68334],
+                        [-92.203062, 37.717229],
+                        [-92.146118, 37.719451],
+                        [-92.151396, 37.68334]
+                    ],
+                    "type": "Polygon"
+                },
+                "properties": {
+                    "name": "R-4501F",
+                    "remarks": "EXCLUDES R-4501A, R-4501B, AND R-4501C WHEN ACTIVE",
+                    "times_of_use": "0700 - 1800, DAILY; OTHER TIMES BY NOTAM 24 HOURS IN ADVANCE",
+                    "type": "R"
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+    },
+  }
+
 Notes:
+
+* ``"cancel"``: Present only when cancelled. Always check for this first
+  and delete the report. No other processing required.
+* If the NOTAM-D SUA has a geojson field, the ``"properties"`` field will contain
+  the following fields which are taken from the source data file:
+
+  * ``"name"``: Name of the SUA. Note that the FAA in the NOTAM will taken
+    out dashes. This name will contain them. This is probably the better
+    display name for users.
+  * ``"remarks"``: Remarks taken directly from the data file.
+  * ``"times_of_use"``: Times of use taken directly from the data source. This is a
+    mix of hard to tell apart local and UTC times.
+  * ``"type"``: Single letter code type. ``'R'`` for Restricted, ``'W'`` for Warning,
+    ``'A'`` for Alert, etc.
+* The ``"accountable"`` field will be (for CONUS) ``SUA`` followed by an ``'E'``,
+  ``'C'``, or ``'W'`` for East, Central, or West.
+* The ``"location"`` field will be (for CONUS) the three letter code for an ARTCC
+  with a 'K' at the front (i.e. ``KZID``).
+
+NOTAM-TMOA, NOTAM-TRA
+^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+/notam-tmoa
+/notam-tmoa/< 4 letter SUAx location>
+/notam-tra
+/notam-tra/< 4 letter SUAx location>
+
+These NOTAMs are basically NOTAM-D-SUAs, but the NOTAM itself provides
+the geometry.
+
+The location for TMOA and TRA NOTAMs are the SUA sites (SUAE, SUAC, SUAW) as
+opposed to D-SUA NOTAMs which use ARTCC site names (KZID, etc).
+
+Example: ::
+
+  <no example available>
+
+Notes:
+
+* ``"cancel"``: Present only when cancelled. Always check for this first
+  and delete the report. No other processing required.
+* These will not have a top-level ``"altitudes"`` field. The ``"altitudes"``
+  field will be inside the geojson object. The only altitude types will be
+  AGL and MSL.
+
+FIS-B Unavailable
+^^^^^^^^^^^^^^^^^
+
+::
+
+  /fis-b-unavailable
+  
+Returns FIS-B Unavailable reports. Each report will be in
+a separate object. Per the standard, these must be made
+available to the pilot. Experience has shown that
+most of these are triggered
+by some long absence of the actual data, so you will probably
+notice the missing data long before FIS-B tells you about it.
+It will send these messages for Guam, San Juan, Alaska, and
+Hawaii, even if you are in the continental U.S.
+  
+Example: ::
+
+  {
+    "type": "FIS_B_UNAVAILABLE",
+    "unique_name": "21-10582"
+    "contents": "GUAM NEXRAD PRODUCT UPDATES UNAVAILABLE",
+    "expiration_time": "2021-06-25T09:13:59Z",
+    "issued_time": "2021-06-22T07:56:00Z",
+    "product": "GUAM NEXRAD",
+    "centers": [
+        "ZAB",
+        "ZAU",
+        "ZFW",
+        "ZHU",
+        "ZID",
+        "ZKC",
+        "ZMP",
+        "ZOB"
+    ],
+  }
+
+Notes:
+
+* ``"product"``: Short coded text description of the unavailable product.
+  Will be one of:
+
+  * ALASKA NEXRAD
+  * CLOUD TOPS
+  * CWA
+  * D-NOTAM
+  * FDC-NOTAM
+  * G-AIRMET
+  * GUAM NEXRAD
+  * HAWAII NEXRAD
+  * ICING
+  * LIGHTNING
+  * METAR
+  * NEXRAD IMAGERY
+  * NOTAM-D-CANCEL
+  * NOTAM-FDC-CANCEL
+  * PIREP ICING
+  * PIREP TURBULENCE
+  * PIREP URGENT
+  * PIREP WIND SHEAR
+  * ROUTINE PIREP
+  * SAN JUAN NEXRAD
+  * SIGMET/CONVECTIVE SIGMET
+  * SUA
+  * TAF
+  * TFR NOTAM
+  * TRA-NOTAM/TMOA-NOTAM
+  * TURBULENCE
+  * WINDS AND TEMPERATURE ALOFT
+
+* ``"centers"``: Locations affected by the outage (don't ask why the
+  above centers in the example need to know about Guam NEXRAD).
+
+SUA (replaced by NOTAM-D SUA)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  /sua
+
+These should no longer be used. They have been functionally
+replaced by NOTAM-D SUA. As of 2020 the product range has
+been reduced to 5 NM.
+
+Example: ::
+
+  {
+    "type": "SUA",
+    "unique_name": "21-6934"
+    "start_time": "2021-06-25T15:00:00Z",
+    "end_time": "2021-06-25T21:00:00Z",
+    "schedule_id": "5988401",
+    "airspace_id": "23941",
+    "status": "P",
+    "airspace_type": "B",
+    "airspace_name": "AR113(W)",
+    "expiration_time": "2021-06-25T21:00:00Z",
+    "high_altitude": 23000,
+    "low_altitude": 19000,
+    "separation_rule": "A",
+    "shape_defined": "Y",
+  }
+
+Notes:
+
+* Detailed description of fields will not be described, because you
+  should not use this. If you desire historical information, a
+  good place to look is *Surveillance and Broadcast Services Description
+  Document SRT-047 Revision 02* (2013). Revision 01 (2011) also has this information.
+  Revision 05 (2020) makes note of the reduced product range and future
+  elimination of this product.
 
 xxx
 ^^^
