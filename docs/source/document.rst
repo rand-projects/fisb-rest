@@ -1365,13 +1365,116 @@ Notes:
   Revision 05 (2020) makes note of the reduced product range and future
   elimination of this product.
 
-xxx
-^^^
+Images
+^^^^^^
 
 ::
 
+/image
+/image/< id >
 
-Example: ::
+Return image metadata and link(s) to image file(s). The following are the
+available image ids:
+
+**NEXRAD-REGIONAL**
+  NEXRAD regional radar image.
+
+**NEXRAD-CONUS**
+  NEXRAD CONUS radar image.
+  
+**CLOUD-TOPS**
+  Cloud Tops image.
+
+**LIGHTNING**
+  Lightning image. This will produce two links. One called
+  LIGHTNING_ALL for all lightning and the other called
+  LIGHTNING_POS containing only positive lightning strikes.
+
+**ICING-02000** through **ICING-24000
+  Icing image for each altitude. Icing produces three images:
+  ICING_xxxxx_PRB, ICING_xxxxx_SEV, and ICING_xxxxx_SLD for
+  icing probability, severity, and super large droplet probability.
+
+**TURBULENCE-02000** through **TURBULENCE-24000**
+  Turbulence image for each altitude.
+
+Fields with particular meaning for images:
+
+  * ``"bbox"``: Bounding box. Used by slippy map javascript
+    libraries to place the 'png' file in the image. The contents is
+    a list contain 2 elements, each a two item list. The first
+    element is the coordinate of the NW corner of the image, and
+    the second is the coordinates of the SE corner of the image.
+    Unlike almost all other FIS-B Rest coordinates, these are in
+    latitude first, then longitude order.
+
+  * ``"valid_time"``: Valid time of a forecast image in ISO-8601 format.
+    Images that are forecasts will have a ``"valid_time"`` field, and
+    images that are observations will have an ``"observation_time"`` field.
+    Only one or the other will appear.
+
+  * ``"observation_time"``: Observation time of an observation in
+    ISO-8601 format. Only radar images and lightning are observations.
+    All other images are forecasts. 
+
+    All of the observation images can have a 10 minute variance. That
+    means newer observations can blend with older observations until
+    the oldest observation is 10 minutes or older than the newest
+    image. Then its data must disappear. The oldest data will be considered
+    the observation time.
+
+    In practice, this really only applies to NEXRAD regional radar
+    and lightning.
+    NEXRAD CONUS is sent every 15 minutes, so it doesn't apply.
+    Lighting is sent every 5 minutes, so a single image can have data
+    from 2 images. NEXRAD regional can have data from 5 images since
+    it is sent every 2 minutes.
+
+  * ``"urls"``: This is an object (dictionary) whose key is the name
+    of an image, and whose value is a URL pointing to that image.
+    Icing and lightning images can have multiple images per product.
+    All others only have a single image.
+
+    You may note that the name of the '.png' file associated with an
+    image is a set of random characters that changes for each image
+    update. This is so there is no chance of an image changing during
+    the time an image object is in use. These images will be deleted
+    after their maximum possible life (135 minutes).
+
+Example of image with single link: ::
+
+  {
+"type": "IMAGE",
+    "type": "IMAGE",
+    "unique_name": "NEXRAD_REGIONAL",
+    "observation_time": "2021-06-26T08:16:00Z",
+    "bbox": [
+        [43.333333, -90.4],
+        [36.666667, -81.6]
+    ],
+    "expiration_time": "2021-06-26T09:31:00Z",
+    "urls": {
+        "NEXRAD_REGIONAL": "http://127.0.0.1:5000/png/qXQisU08RoXp.png"
+    }
+  }
+
+Example of image with multiple links: ::
+
+  {
+    "type": "IMAGE",
+    "unique_name": "ICING_10000",
+    "valid_time": "2021-06-26T07:00:00Z"
+    "bbox": [
+        [43.333333, -92.0],
+        [36.666667, -80.0]
+    ],
+    "expiration_time": "2021-06-26T08:45:00Z",
+    "urls": {
+        "ICING_10000_PRB": "http://127.0.0.1:5000/png/niojQdPQKRWs.png",
+        "ICING_10000_SEV": "http://127.0.0.1:5000/png/4luk4TWJSDd3.png",
+        "ICING_10000_SLD": "http://127.0.0.1:5000/png/47JNF24Cwwzu.png"
+    },
+  }
 
 Notes:
 
