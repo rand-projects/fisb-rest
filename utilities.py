@@ -201,19 +201,56 @@ def getStandardQueryItems(request):
     return hasError, errorString, dt, limitInt, \
         hasLatLong, latFloat, longFloat, hasHighLow, high, low
 
-def changeStandardFields(msg, delFields):
+def addCrlCompleteField(msg):
+    reports = msg['reports']
+
+    if len(reports) == 0:
+        msg['complete'] = 1
+        return
+
+    if msg['overflow'] == 1:
+        msg['complete'] = 0
+        return
+
+    for r in reports:
+            if '*' not in r:
+                msg['complete'] = 0
+                return
+
+    msg['complete'] = 1
+    return
+
+def augmentRsr(msg):
+    if 'stations' in msg:
+        stations = msg['stations']
+        keys = list(stations.keys())
+        for k in keys:
+            stations[k] = stations[k][2]
+
+def changeStandardFields(msg):
     msg = convertMsgDtToIsoString(msg)
 
-    # Delete any fields we don't need. CRL station is common
-    # for G-AIRMET, SIGMET, AIRMET, WST, CWA.
-    for field in delFields:
-        if field in msg:
-            del msg[field]
-            
+    msgType = msg['type']
+
+    # Remove 'digest' and '_id' from all messages.
     del msg['_id']
     if 'digest' in msg:
         del msg['digest']
 
+    # Remove 'station' from messages which have an associated CRL
+    if msgType in ['NOTAM', 'G_AIRMET', 'AIRMET', 'WST', 'CWA', 'SIGMET']:
+        if 'station' in msg:
+            del msg['station']
+
+    # CRL messages will get a 'complete' field.
+    if msgType.startswith('CRL'):
+        addCrlCompleteField(msg)
+        del msg['product_id']
+
+    # RSR message will get the station value turned into percentage only.
+    if msgType == 'RSR':
+        augmentRsr(msg)            
+    
     return msg
 
 def checkIfInPolygon(msg, lat, long):
@@ -283,7 +320,7 @@ def returnStaticOne(findArg1, request, delFields=[]):
         result['num_results'] = 0
         return jsonify(result)
 
-    msg = changeStandardFields(msg, delFields)
+    del msg['_id']
 
     result['status'] = 0
     result['result'] = msg
@@ -319,7 +356,7 @@ def returnStaticMany(findArg1, request, delFields=[]):
             continue
 
         numResults += 1
-        msg = changeStandardFields(msg, delFields)
+        del msg['_id']        
 
         messages.append(msg)
 
@@ -328,7 +365,7 @@ def returnStaticMany(findArg1, request, delFields=[]):
     result['num_results'] = numResults
     return jsonify(result)
     
-def returnOne(findArg1, request, delFields=[]):
+def returnOne(findArg1, request):
     result = {}
     
     hasError, errorString, afterDt, _, \
@@ -356,7 +393,7 @@ def returnOne(findArg1, request, delFields=[]):
         result['after'] = dtToIsoString(afterDt)
         return jsonify(result)
 
-    msg = changeStandardFields(msg, delFields)
+    msg = changeStandardFields(msg)
     afterStr = msg['insert_time']
     del msg['insert_time']
 
@@ -366,7 +403,7 @@ def returnOne(findArg1, request, delFields=[]):
     result['after'] = afterStr
     return jsonify(result)
     
-def returnMany(findArg1, request, delFields=[]):
+def returnMany(findArg1, request):
     result = {}
 
     hasError, errorString, afterDt, limit, \
@@ -399,7 +436,7 @@ def returnMany(findArg1, request, delFields=[]):
             continue
 
         numResults += 1
-        msg = changeStandardFields(msg, delFields)
+        msg = changeStandardFields(msg)
 
         afterStr = msg['insert_time']
         del msg['insert_time']

@@ -66,12 +66,12 @@ might return: ::
     "after": "2021-06-23T02:03:41.221000Z",
     "num_results": 1,
     "result": {
+        "type": "METAR",
+        "unique_name": "KIND",
         "contents": "METAR KIND 230154Z 20006KT 10SM FEW065 FEW250 17/08 A3003
                      RMK AO2 SLP168\n     T01720083=",
         "expiration_time": "2021-06-23T03:54:00Z",
-        "observation_time": "2021-06-23T01:54:00Z",
-        "type": "METAR",
-        "unique_name": "KIND"
+        "observation_time": "2021-06-23T01:54:00Z"
     },
     "status": 0
   }
@@ -128,19 +128,19 @@ We would get back a ``results`` field with a list of many results. ::
     "num_results": 549,
     "results": [
         {
+            "type": "METAR",
+            "unique_name": "KMWK",
             "contents": "METAR KMWK 230135Z AUTO 00000KT 10SM CLR 18/14
                          A3003 RMK AO2\n     T01820144=",
             "expiration_time": "2021-06-23T03:35:00Z",
-            "observation_time": "2021-06-23T01:35:00Z",
-            "type": "METAR",
-            "unique_name": "KMWK"
+            "observation_time": "2021-06-23T01:35:00Z"
         },
         {
+            "type": "METAR",
+            "unique_name": "KOSH",
             "contents": "METAR KOSH 230153Z 00000KT 10SM BKN070 17/10 A2993=",
             "expiration_time": "2021-06-23T03:53:00Z",
-            "observation_time": "2021-06-23T01:53:00Z",
-            "type": "METAR",
-            "unique_name": "KOSH"
+            "observation_time": "2021-06-23T01:53:00Z"
         }
 
         << many results removed >>
@@ -180,7 +180,7 @@ each request and what actions they perform.
   graphic component. They must always occur together, must be 
   positive integers and low must be <= high.
 
-  Typically, this applies to WST, G-AIRMET, SIGMET, AIRMET,
+  Typically, this applies to G-AIRMET, SIGMET/WST, AIRMET,
   NOTAM-TRA, and NOTAM-TFR. It does not apply to NOTAM-D-SUA
   (for complicated reasons discussed when we describe this
   type of object).
@@ -262,7 +262,7 @@ mentioned below are only FIS-B related.
 
 ``"type"``
   Basic type of message. These are items like ``METAR``, ``TAF``, ``NOTAM``,
-  ``WST``, ``G-AIRMET``, etc. The type of a message dictates the fields
+  ``SIGMET``, ``G-AIRMET``, etc. The type of a message dictates the fields
   that it will have. All objects will have this field.
 
 ``"unique_name"``
@@ -327,7 +327,7 @@ mentioned below are only FIS-B related.
 
     {
       "type": "METAR",
-      "unique_name": "K4M9"
+      "unique_name": "K4M9",
       "observation_time": "2021-06-24T02:35:00Z",
       "contents": "METAR K4M9 240235Z AUTO 00000KT 10SM CLR 24/24
                    A3004 RMK AO2 PWINO=",
@@ -348,7 +348,7 @@ mentioned below are only FIS-B related.
               }
           ],
           "type": "FeatureCollection"
-      },
+      }
     }
 
 ``"cancel"``
@@ -357,8 +357,7 @@ mentioned below are only FIS-B related.
   * ``NOTAM`` (all subtypes)
   * ``FIS_B_UNAVAILABLE`` (FIS-B Product Unavailable)
   * ``AIRMET``
-  * ``SIGMET``
-  * ``WST`` (Convective Sigmet)
+  * ``SIGMET`` (includes WST (Convective Sigmet))
   * ``CWA`` (Center Weather Advisory),
   * ``SUA`` (Not the NOTAM-D SUA, but the old SUA message)
   * ``G_AIRMET``
@@ -382,18 +381,18 @@ mentioned below are only FIS-B related.
 
     {
         "type": "G_AIRMET",
-        "unique_name": "21-9897"
+        "unique_name": "21-9897",
         "cancel": "21-9897",
-        "expiration_time": "2021-06-21T17:10:21Z",
+        "expiration_time": "2021-06-21T17:10:21Z"
     }
 
   And a NOTAM cancellation: ::
 
     {
         "type": "NOTAM",
-        "unique_name": "21-12860"
+        "unique_name": "21-12860",
         "cancel": "21-12860",
-        "expiration_time": "2021-06-21T17:23:18Z",
+        "expiration_time": "2021-06-21T17:23:18Z"
     }
 
   Note that the NOTAM won't have a 'subtype' field. It isn't
@@ -440,7 +439,7 @@ Example: ::
 
   {
         "type": "METAR",
-        "unique_name": "KLAF"
+        "unique_name": "KLAF",
         "observation_time": "2021-06-24T16:54:00Z",
         "contents": "METAR KLAF 241654Z VRB06G17KT 10SM CLR 28/16
                      A3004 RMK AO2 SLP168\n     T02780161=",
@@ -463,7 +462,7 @@ Example: ::
                 }
             ],
             "type": "FeatureCollection"
-        },
+        }
   }
 
 Notes:
@@ -489,7 +488,7 @@ Example: ::
     "unique_name": "KIND",
     "issued_time": "2021-06-24T11:20:00Z",
     "valid_period_begin_time": "2021-06-24T12:00:00Z",
-    "valid_period_end_time": "2021-06-25T18:00:00Z"
+    "valid_period_end_time": "2021-06-25T18:00:00Z",
     "contents": "TAF KIND 241120Z 2412/2518 16007KT P6SM FEW200\n
                  FM241900 19012G20KT P6SM SCT250\n
                  FM250600 18010KT P6SM VCSH OVC100\n
@@ -514,7 +513,7 @@ Example: ::
             }
         ],
         "type": "FeatureCollection"
-    },
+    }
   }
 
 Notes:
@@ -549,12 +548,12 @@ Example: ::
     "unique_name": "CMH",
     "model_run_time": "2021-06-24T12:00:00Z",
     "issued_time": "2021-06-24T13:58:00Z",
-    "valid_time": "2021-06-25T00:00:00Z"
+    "valid_time": "2021-06-25T00:00:00Z",
     "for_use_from_time": "2021-06-24T21:00:00Z",
     "for_use_to_time": "2021-06-25T06:00:00Z",
     "contents": "   1919 2122+13 2712+11 9900+04 2606-09 3109-19
                     292735 312945 315757",
-    "expiration_time": "2021-06-25T06:00:00Z",
+    "expiration_time": "2021-06-25T06:00:00Z"
   }
 
 Notes:
@@ -589,7 +588,7 @@ Example of a PIREP that is a Point: ::
 
   {
     "type": "PIREP",
-    "unique_name": "djfHdke8mQ2Z"
+    "unique_name": "djfHdke8mQ2Z",
     "contents": "PIREP MSN 241940Z MSN UA /OV MSN080020/TM 1940/FL220/TP
                  E545/TA M15/IC LGT RIME DURD 220-180",
     "expiration_time": "2021-06-24T21:40:00Z",
@@ -618,14 +617,14 @@ Example of a PIREP that is a Point: ::
             }
         ],
         "type": "FeatureCollection"
-      },
+      }
   }
 
 Example of a PIREP that is a route with a geojson type of LineString: ::
 
   {                                                                       
     "type": "PIREP",
-    "unique_name": "KQeZQflpleq1"
+    "unique_name": "KQeZQflpleq1",
     "ov": "ACO090020-ACO310010",
     "report_time": "2021-06-25T10:32:00Z",
     "report_type": "UA",
@@ -654,7 +653,7 @@ Example of a PIREP that is a route with a geojson type of LineString: ::
             }
         ],
         "type": "FeatureCollection"
-    },
+    }
   }
 
 Notes:
@@ -688,19 +687,19 @@ Notes:
     * ``"wv"``: Wind direction and speed.
     * ``"ic"``: Icing report.
 
-SIGMET, AIRMET, WST, CWA
+SIGMET/WST, AIRMET, CWA
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
   /sigmet
   /airmet
-  /wst
   /cwa
 
-Provides all available SIGMETs, AIRMETs, WSTs (Convective SIGMETS), and
+Provides all available SIGMET/WSTs, AIRMETs, and
 CWAs (Center Weather Advisory). From a returned object perspective,
-they are all identical except for their subject matter.
+they are all identical except for their subject matter. SIGMET
+includes WSTs (Convective SIGMETs).
 
 One important thing to remember is that all of these objects can
 have both a text and object portion. Only the text portion is mandatory.
@@ -716,7 +715,7 @@ Example: ::
 
   {
     "type": "AIRMET",
-    "unique_name": "21-9178"
+    "unique_name": "21-9178",
     "issued_time": "2021-06-24T20:31:00Z",
     "for_use_from_time": "2021-06-24T20:45:00Z",
     "for_use_to_time": "2021-06-25T03:00:00Z",
@@ -769,7 +768,7 @@ Example: ::
             }
         ],
         "type": "FeatureCollection"
-    },
+    }
   }
 
 Notes:
@@ -804,7 +803,7 @@ Example: ::
 
   {
     "type": "G_AIRMET",
-    "unique_name": "21-10892"
+    "unique_name": "21-10892",
     "subtype": 0,
     "issued_time": "2021-06-25T02:45:00Z",
     "for_use_from_time": "2021-06-25T03:00:00Z",
@@ -840,7 +839,7 @@ Example: ::
             }
         ],
         "type": "FeatureCollection"
-    },
+    }
   }
 
 Notes:
@@ -951,7 +950,7 @@ Example: ::
 
   {
     "type": "NOTAM",
-    "unique_name": "0-5116"
+    "unique_name": "0-5116",
     "subtype": "TFR",
     "number": "0/5116",
     "contents": "NOTAM-TFR 0/5116 220551Z PART 1 OF 4 SECURITY..SPECIAL
@@ -982,7 +981,7 @@ Example: ::
                 DAMAGING, OR DESTRUCTION OF UNMANNED AIRCRAFT CONSIDER(INCMPL)",
     "start_of_activity_time": "2020-09-01T12:00:00Z",
     "end_of_validity_time": "2021-09-01T11:59:00Z",
-    "expiration_time": "2021-06-26T02:24:57Z",
+    "expiration_time": "2021-06-26T02:24:57Z"
     }
 
 Notes:
@@ -1041,7 +1040,7 @@ Example NOTAM-D: ::
 
   {
     "type": "NOTAM",
-    "unique_name": "21-12579-KHFY"
+    "unique_name": "21-12579-KHFY",
     "keyword": "OBST",
     "location": "KHFY",
     "number": "06/579",
@@ -1071,14 +1070,14 @@ Example NOTAM-D: ::
             }
         ],
         "type": "FeatureCollection"
-    },
+    }
   }
 
 Example NOTAM-FDC: ::
 
   {
     "type": "NOTAM",
-    "unique_name": "1-8239"
+    "unique_name": "1-8239",
     "subtype": "FDC",
     "keyword": "IAP",
     "location": "KSBN",
@@ -1090,7 +1089,7 @@ Example NOTAM-FDC: ::
                  LNAV/VNAV DA NA ALL CATS.\n2106071415-2306071415EST",
     "start_of_activity_time": "2021-06-07T14:15:00Z",
     "end_of_validity_time": "2023-06-07T14:15:00Z",
-    "expiration_time": "2023-06-07T14:15:00Z",
+    "expiration_time": "2023-06-07T14:15:00Z"
   }
 
 Notes:
@@ -1160,7 +1159,7 @@ Example: ::
 
   {
     "type": "NOTAM",
-    "unique_name": "21-12582-KZKC"
+    "unique_name": "21-12582-KZKC",
     "subtype": "D-SUA",
     "keyword": "AIRSPACE",
     "location": "KZKC",
@@ -1202,7 +1201,7 @@ Example: ::
             }
         ],
         "type": "FeatureCollection"
-    },
+    }
   }
 
 Notes:
@@ -1231,9 +1230,9 @@ NOTAM-TMOA, NOTAM-TRA
 ::
 
 /notam-tmoa
-/notam-tmoa/< 4 letter SUAx location>
+/notam-tmoa/<4 letter SUAx location>
 /notam-tra
-/notam-tra/< 4 letter SUAx location>
+/notam-tra/<4 letter SUAx location>
 
 These NOTAMs are basically NOTAM-D-SUAs, but the NOTAM itself provides
 the geometry.
@@ -1268,27 +1267,36 @@ by some long absence of the actual data, so you will probably
 notice the missing data long before FIS-B tells you about it.
 It will send these messages for Guam, San Juan, Alaska, and
 Hawaii, even if you are in the continental U.S.
-  
+
 Example: ::
 
   {
     "type": "FIS_B_UNAVAILABLE",
-    "unique_name": "21-10582"
+    "unique_name": "21-10582",
+    "product": "GUAM NEXRAD",
     "contents": "GUAM NEXRAD PRODUCT UPDATES UNAVAILABLE",
     "expiration_time": "2021-06-25T09:13:59Z",
     "issued_time": "2021-06-22T07:56:00Z",
-    "product": "GUAM NEXRAD",
     "centers": [
-        "ZAB",
-        "ZAU",
-        "ZFW",
-        "ZHU",
-        "ZID",
-        "ZKC",
-        "ZMP",
-        "ZOB"
-    ],
+        "ZAB", "ZAU", "ZFW", "ZHU", "ZID", "ZKC", "ZMP", "ZOB"
+    ]
   }
+
+Another example: ::
+
+  {
+    "type": "FIS_B_UNAVAILABLE",
+    "unique_name": "21-10589",
+    "product": "ICING",
+    "contents": "ICING PRODUCT UPDATES UNAVAILABLE AT 16000FT AND
+                 18000FT AND 24000FT",
+    "expiration_time": "2021-06-27T05:14:15Z",
+    "issued_time": "2021-06-27T04:17:00Z",
+    "centers": [
+        "ZAB", "ZAU", "ZFW", "ZHU", "ZID", "ZKC", "ZMP", "ZOB"
+    ]
+  }
+
 
 Notes:
 
@@ -1324,7 +1332,8 @@ Notes:
   * WINDS AND TEMPERATURE ALOFT
 
 * ``"centers"``: Locations affected by the outage (don't ask why the
-  above centers in the example need to know about Guam NEXRAD).
+  above centers in the example, or the average C-172 CONUS
+  pilot, need to know about Guam NEXRAD).
 
 SUA (replaced by NOTAM-D SUA)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1341,7 +1350,7 @@ Example: ::
 
   {
     "type": "SUA",
-    "unique_name": "21-6934"
+    "unique_name": "21-6934",
     "start_time": "2021-06-25T15:00:00Z",
     "end_time": "2021-06-25T21:00:00Z",
     "schedule_id": "5988401",
@@ -1353,7 +1362,7 @@ Example: ::
     "high_altitude": 23000,
     "low_altitude": 19000,
     "separation_rule": "A",
-    "shape_defined": "Y",
+    "shape_defined": "Y"
   }
 
 Notes:
@@ -1371,10 +1380,10 @@ Images
 ::
 
 /image
-/image/< id >
+/image/<image-name>
 
 Return image metadata and link(s) to image file(s). The following are the
-available image ids:
+available image names:
 
 **NEXRAD-REGIONAL**
   NEXRAD regional radar image.
@@ -1390,7 +1399,7 @@ available image ids:
   LIGHTNING_ALL for all lightning and the other called
   LIGHTNING_POS containing only positive lightning strikes.
 
-**ICING-02000** through **ICING-24000
+**ICING-02000** through **ICING-24000**
   Icing image for each altitude. Icing produces three images:
   ICING_xxxxx_PRB, ICING_xxxxx_SEV, and ICING_xxxxx_SLD for
   icing probability, severity, and super large droplet probability.
@@ -1441,10 +1450,9 @@ Fields with particular meaning for images:
     the time an image object is in use. These images will be deleted
     after their maximum possible life (135 minutes).
 
-Example of image with single link: ::
+Example of an image with a single link: ::
 
   {
-"type": "IMAGE",
     "type": "IMAGE",
     "unique_name": "NEXRAD_REGIONAL",
     "observation_time": "2021-06-26T08:16:00Z",
@@ -1458,7 +1466,7 @@ Example of image with single link: ::
     }
   }
 
-Example of image with multiple links: ::
+Example of an image with multiple links: ::
 
   {
     "type": "IMAGE",
@@ -1478,42 +1486,357 @@ Example of image with multiple links: ::
 
 Notes:
 
-xxx
-^^^
+Current Report List (CRL)
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
+/crl-8              (or /crl-notam-tfr)
+/crl-8/<station>
+/crl-11             (or /crl-airmet)
+/crl-11/<station>
+/crl-12             (or /crl-sigmet)
+/crl-12/<station>
+/crl-14             (or /crl-g-airmet)
+/crl-14/<station>
+/crl-15             (or /crl-cwa)
+/crl-15/<station>
+/crl-16             (or /crl-notam-tra)
+/crl-16/<station>
+/crl-17             (or /crl-notam-tmoa)
+/crl-17/<station>
+
+Current Report Lists contain the reports sent by a particular
+station for a certain subset of messages.
+If you wish to get a CRL only for a particular '<station>', you
+may do so. See the example for the form of a station.
+
+The number after CRL
+denotes the FIS-B product id.
+You can either refer to the CRL by FIS-B product id, or use an
+alias. The product ids and aliases are:
+
+* 8: NOTAM-TFR [*alias: '/crl-notam-tfr'*]
+* 11: AIRMET [*alias: '/crl-airmet'*]
+* 12: SIGMET and WST (Convective SIGMET) [*alias: '/crl-sigmet'*]
+* 14: G-AIRMET [*alias: '/crl-g-airmet'*]
+* 15: CWA [*alias: '/crl-cwa'*]
+* 16: NOTAM-TRA [*alias: '/crl-notam-tra'*]
+* 17: NOTAM-TMOA [*alias: '/crl-notam-tmoa'*]
+
+A CRL is tied to a specific ground station. Each ground station
+will have its own set of CRLs. If you are receiving three ground
+stations, you should be getting a CRL object of each type from
+all three ground stations.
+
+CRLs have the concept of 'completeness'. If you have a copy of
+each message in the CRL, that CRL is said to be 'complete'. If
+the CRL doesn't show any messages for that type, the CRL is also
+considered complete. If there is no CRL of a particular type,
+that CRL is considered 'incomplete'. If a particular CRL type
+has messages with both a text and a graphics portion, both must
+be present in order to be considered complete.
+
+CRLs can have a maximum number of 138 reports. If there are more
+than 138 items, the overflow field will be set to 1.
+The standard calls the state where the overflow
+field is set, and all the other CRLs are present as 'Indeterminate'.
+
+Fields with importance to CRL objects:
+
+``"complete"``
+  Set to '1' if all messages have been received, otherwise '0'.
+  If ``"overflow"`` is set to '1', complete will be set
+  to '0'.
+
+``"overflow"``
+  Will be '0' is there is not overflow (more than 138 reports)
+  or '1' is there is overflow.
+
+``"station"``
+  Station name of the ground station.
+
+``"product_type"``
+  Type of product this applies to. Will have one of the following values:
+
+    * crl-8: ``NOTAM/TFR``
+    * crl-11: ``AIRMET``
+    * crl-12: ``SIGMET``
+    * crl-14: ``G-AIRMET``
+    * crl-15: ``CWA``
+    * crl-16: ``NOTAM/TRA``
+    * crl-17: ``NOTAM/TMOA``
+
+  Each string contains the message types that it represents.
+  SIGMET includes WSTs.
+  If you need both a message type
+  and a subtype, they will be separated by a forward slash (``'/'``).
+  Using this string and the 'unique_name' in the ``"reports"``
+  field, you could lookup any message.
+
+``"range_nm"``
+  Look-ahead range of the product in nautical miles.
+  Different CRL types have different look-ahead ranges.
+  Look-ahead range is also determined by the type of 
+  ground station (surface, low, medium, high).
+
+``"reports"``
+  List of all possible reports. If the list is empty, there are
+  no reports available for this CRL type.
+
+  Each line will have a format like: ::
+
+    0-5116/TO*
+
+  The first set of characters up to the slash ('``/``') is
+  the 'unique_name' of the product. After the forward slash will
+  be ``'TG'`` (text and graphics) or ``'TO'`` (text only). If there
+  is an asterick (``'*'``) at the end of the string, this indicates
+  that the message has been received.
 
 Example: ::
 
-Notes:
+  {
+    "type": "CRL_8",
+    "unique_name": "40.0383~-86.255593",
+    "station": "40.0383~-86.255593",
+    "complete": 0,
+    "overflow": 0,
+    "product_id": 8,
+    "range_nm": 100,
+    "reports": [
+        "0-5116/TO",
+        "0-367/TO*",
+        "0-9801/TO*",
+        "0-229/TO*",
+        "0-230/TO*",
+        "1-5318/TO*"
+     ],
+    "expiration_time": "2021-06-26T20:08:20Z"
+  }
 
-xxx
-^^^
+Service Status
+^^^^^^^^^^^^^^
 
 ::
 
+/service-status
+
+Service status list all aircraft receiving TIS-B or ADS-R
+services.
+
+There is one of these objects for each ground station.
+The ``"unique_name"`` is the station name compatible with
+other FIS-B Rest ``"station"`` fields.
+
+If there is no current traffic for a station, there will be no
+traffic message (i.e. there is no such thing as a empty traffic
+message).
+
+The only new field is ``"traffic"``:
+
+``"traffic"``
+  List of all aircraft being provided services by the ground
+  station. The list contains the aircraft ICAO addresses.
 
 Example: ::
 
-Notes:
+  {
+    "type": "SERVICE_STATUS",
+    "unique_name": "40.0383~-86.255593",
+    "expiration_time": "2021-06-26T22:40:24Z",
+    "traffic": [
+        "a8e069",
+        "a8eb8e",
+        "aa8cf4",
+        "aba852",
+        "a20c5c",
+        "a20885",
+        "a03af6"
+    ]
+  }
 
-xxx
-^^^
+Reception Success Rate (RSR)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
+/rsr
+
+The Reception Success Rate (RSR) is the percentage of
+messages you are receiving vs the maximum number of 
+messages you could have received. This calculation
+can be set up in different ways. See the 'fisb-decode'
+documentation for more details.
+
+There is only one (or zero) RSR messages available at
+any given time. Each message contains a list of all
+stations being received and their RSR value.
+
+The 'stations' field is unique to RSR:
+
+``"stations"``
+  Dictionary whose keys are the names of ground stations 
+  being received in the usual ``"station"`` field format.
+  The values are the percentage of possible packets being
+  received. In the example below, 91% of messages from
+  ground station ``"40.0383~-86.255593"`` are being received.
 
 Example: ::
 
+  {
+    "type": "RSR",
+    "unique_name": "RSR",
+    "stations": {
+        "40.0383~-86.255593": 91
+    },
+    "expiration_time": "2021-06-26T22:43:55.130000Z"
+  }
+
 Notes:
 
-xxx
-^^^
+* If no stations are being received, any RSR message will expire
+  and will not be created again until more 
+
+
+
+Image Legends (static)
+^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
+/static/legend
+
+Returns single object containing colors, legend text, and
+units of measurement for all images.
+
+Consists of a dictionary whose keys represent the image type
+and will be one of the following:
+
+ * ``"CLOUDTOP"``: Cloudtop image.
+ * ``"ICING_PRB"``: Icing probability image.
+ * ``"ICING_SEV"``: Icing severity image.
+ * ``"ICING_SLD"``: Icing super large droplets image.
+ * ``"LIGHTNING"``: Lighting image (both all lightning
+   and positive lightning).
+ * ``"RADAR"``: All RADAR images.
+ * ``"TURBULENCE"``: Turbulence image.
+
+ Each image type holds a dictionary with these fields:
+
+ ``"units"``
+  String containing the text of the units represented by the
+  values in ``"colors"``.
+
+ ``"colors"``
+  Ordered list containing a set of two element lists consisting of:
+  
+    1. RGB (integer) color
+    2. Text value for the color.
+
+  The ``"colors"`` list is ordered in the form it should be displayed.
+
+  There is a quirk in the standard where the 'Severe' value for
+  the ``"ICING_SEV"`` image has a lower value than 'Heavy'.
+  This is corrected by 'fisb-decode' and 'fisb-rest' (and is a
+  moot point since the source FIS-B product doesn't actually have
+  a 'Severe' value).
 
 Example: ::
 
-Notes:
+  {
+    "CLOUDTOP": {
+        "colors": [
+            [14867152, "< 1500"],
+            [14733760, "1500-3000"],
+            [14731693, "3000-4500"],
+            [14860697, "4500-6000"],
+            [15120770, "6000-7500"],
+            [15577449, "7500-9000"],
+            [16753202, "9000-10500"],
+            [15373608, "10500-12000"],
+            [13928478, "12000-13500"],
+            [12548886, "13500-15000"],
+            [11103503, "15000-18000"],
+            [9723913, "18000-21000"],
+            [8278532, "21000-24000"],
+            [6898689, ">24000"],
+            [15522454, "No Data"]
+        ],
+        "units": "ft MSL"
+    },
+    "ICING_PRB": {
+        "colors": [
+            [7787519, "5-20"],
+            [65280, "20-30"],
+            [16776960, "30-40"],
+            [15828533, "40-60"],
+            [16711680, "60-80"],
+            [16711935, ">80"],
+            [15522454, "No Data"]
+        ],
+        "units": "%"
+    },
+    "ICING_SEV": {
+        "colors": [
+            [13303807, "Trace"],
+            [9752061, "Light"],
+            [6003708, "Moderate"],
+            [670714, "Heavy"],
+            [14299098, "Severe"],
+            [15522454, "No Data"]
+        ],
+        "units": "Type"
+    },
+    "ICING_SLD": {
+        "colors": [
+            [16776960, "5-50"],
+            [16711680, ">50"],
+            [15522454, "No Data"]
+        ],
+        "units": "SLD %"
+    },
+    "LIGHTNING": {
+        "colors": [
+            [46321, "1"],
+            [12704239, "2"],
+            [5933115, "3-5"],
+            [13230776, "6-10"],
+            [16776960, "11-15"],
+            [13197076, ">15"],
+            [15522454, "No Data"]
+        ],
+        "units": "Strike Density"
+    },
+    "RADAR": {
+        "colors": [
+            [60977, "20-30"],
+            [762654, "30-40"],
+            [16776762, "40-45"],
+            [16750398, "45-50"],
+            [16711697, "50-55"],
+            [16711931, ">55"],
+            [15522454, "Not Incl"]
+        ],
+        "units": "dBZ"
+    },
+    "TURBULENCE": {
+        "colors": [
+            [13434481, "14-21"],
+            [15588917, "21-28"],
+            [16757806, "28-35"],
+            [16749864, "35-42"],
+            [16741923, "42-49"],
+            [16731165, "49-56"],
+            [16711704, "56-63"],
+            [14876693, "63-70"],
+            [12124177, "70-77"],
+            [9371661, "77-84"],
+            [8060940, "84-91"],
+            [5439496, "91-98"],
+            [4259846, ">98"],
+            [15522454, "No Data"]
+        ],
+        "units": "EDR*100"
+    }
+  }
