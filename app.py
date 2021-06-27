@@ -166,6 +166,19 @@ def g_airmet_cancel():
 def cwa_cancel():
     return util.returnMany({'type': 'CWA', 'cancel': {'$exists': True}}, request)
 
+@app.route("/cancel-sigmet")
+def sigmet_cancel():
+    return util.returnMany({'type': 'SIGMET', 'cancel': {'$exists': True}}, request)
+
+@app.route("/cancel-airmet")
+def airmet_cancel():
+    return util.returnMany({'type': 'AIRMET', 'cancel': {'$exists': True}}, request)
+
+@app.route("/cancel")
+def cancel():
+    return util.returnMany({'type': {'$in': ['AIRMET', 'SIGMET', 'CWA', \
+        'G_AIRMET', 'NOTAM']}, 'cancel': {'$exists': True}}, request)
+
 @app.route("/crl-8")
 def crl_8():
     return util.returnMany({'type': 'CRL_8'}, request)

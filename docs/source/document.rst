@@ -1335,44 +1335,36 @@ Notes:
   above centers in the example, or the average C-172 CONUS
   pilot, need to know about Guam NEXRAD).
 
-SUA (replaced by NOTAM-D SUA)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Cancelled Messages
+^^^^^^^^^^^^^^^^^^
 
 ::
 
-  /sua
+  /cancel
+  /cancel-notam
+  /cancel-g-airmet
+  /cancel-cwa
+  /cancel-sigmet
+  /cancel-airmet
 
-These should no longer be used. They have been functionally
-replaced by NOTAM-D SUA. As of 2020 the product range has
-been reduced to 5 NM.
+Will show recently cancelled messages. Note that these are
+messages specifically cancelled by FIS-B before their usual
+expiration time. '/cancel' will show all available cancelled
+messages. More specific types will only show those message
+types. Only TWGO messages can be cancelled. '/cancel/sigmet'
+will include SIGMET and WST messages.
+
+See the earlier discussion about the meaning of the
+``"cancel"`` field.
 
 Example: ::
 
   {
-    "type": "SUA",
-    "unique_name": "21-6934",
-    "start_time": "2021-06-25T15:00:00Z",
-    "end_time": "2021-06-25T21:00:00Z",
-    "schedule_id": "5988401",
-    "airspace_id": "23941",
-    "status": "P",
-    "airspace_type": "B",
-    "airspace_name": "AR113(W)",
-    "expiration_time": "2021-06-25T21:00:00Z",
-    "high_altitude": 23000,
-    "low_altitude": 19000,
-    "separation_rule": "A",
-    "shape_defined": "Y"
+    "type": "G_AIRMET",
+    "unique_name": "21-9897",
+    "cancel": "21-9897",
+    "expiration_time": "2021-06-21T17:10:21Z"
   }
-
-Notes:
-
-* Detailed description of fields will not be described, because you
-  should not use this. If you desire historical information, a
-  good place to look is *Surveillance and Broadcast Services Description
-  Document SRT-047 Revision 02* (2013). Revision 01 (2011) also has this information.
-  Revision 05 (2020) makes note of the reduced product range and future
-  elimination of this product.
 
 Images
 ^^^^^^
@@ -1591,7 +1583,7 @@ Fields with importance to CRL objects:
   The first set of characters up to the slash ('``/``') is
   the 'unique_name' of the product. After the forward slash will
   be ``'TG'`` (text and graphics) or ``'TO'`` (text only). If there
-  is an asterick (``'*'``) at the end of the string, this indicates
+  is an asterisk (``'*'``) at the end of the string, this indicates
   that the message has been received.
 
 Example: ::
@@ -1698,7 +1690,44 @@ Notes:
 * If no stations are being received, any RSR message will expire
   and will not be created again until more 
 
+SUA (replaced by NOTAM-D SUA)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+::
+
+  /sua
+
+These should no longer be used. They have been functionally
+replaced by NOTAM-D SUA. As of 2020 the product range has
+been reduced to 5 NM.
+
+Example: ::
+
+  {
+    "type": "SUA",
+    "unique_name": "21-6934",
+    "start_time": "2021-06-25T15:00:00Z",
+    "end_time": "2021-06-25T21:00:00Z",
+    "schedule_id": "5988401",
+    "airspace_id": "23941",
+    "status": "P",
+    "airspace_type": "B",
+    "airspace_name": "AR113(W)",
+    "expiration_time": "2021-06-25T21:00:00Z",
+    "high_altitude": 23000,
+    "low_altitude": 19000,
+    "separation_rule": "A",
+    "shape_defined": "Y"
+  }
+
+Notes:
+
+* Detailed description of fields will not be described, because you
+  should not use this. If you desire historical information, a
+  good place to look is *Surveillance and Broadcast Services Description
+  Document SRT-047 Revision 02* (2013). Revision 01 (2011) also has this information.
+  Revision 05 (2020) makes note of the reduced product range and future
+  elimination of this product.
 
 Image Legends (static)
 ^^^^^^^^^^^^^^^^^^^^^^
