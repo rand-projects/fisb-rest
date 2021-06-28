@@ -1,16 +1,28 @@
 FIS-B Rest
 ==========
 
+Static and Non-Static Requests
+------------------------------
+
+Almost all of the rest server calls are *non-static*. That means that 
+they return active, timed data from FIS-B. A few calls are *static*.
+These do not return active FIS-B data, but other fixed results, such
+as information about the colors and text to display as legend data for
+images. You can easily tell the difference between the two, because all
+static calls start with '/static/', such as '/static/legend'. They both
+use the basic return structure described below, but static calls do
+not return an 'after' field, since it has no meaning for them.
+
 Basic Return Structure
 ----------------------
 
 The only JSON field guaranteed to be in each returned object is ``status``.
-It will have one of two values: 0 if there were no errors, and -1, if
+It will have one of two values: '0' if there were no errors, and '-1', if
 there were any errors. Note that this does not include regular web
 errors like 404 errors. Just errors where the query was close enough
 that a JSON object was returned.
 
-If you do get an ``status`` code of -1, you will also get an ``error``
+If you do get an ``status`` code of '-1', you will also get an ``error``
 field which contains an error message.
 
 For example: ::
@@ -20,11 +32,11 @@ For example: ::
 would return: ::
 
   {
-    "error": "Need both lat and long parameters. ",
+    "error": "Need both lat and long parameters.",
     "status": -1
   }
 
-If the ``status`` code is 0, you will get an object that contains
+If the ``status`` code is '0', you will get an object that contains
 ``num_results`` and ``after`` fields.
 
 For example: ::
@@ -39,28 +51,19 @@ returns: ::
     "status": 0
   }
 
-``num_results`` is pretty obvious. If there were any results, we would return a ``result`` or ``results``
+``num_results`` is the number of results. If there were any results, we would return a ``result`` or ``results``
 field depending on the query. We will cover this more in a minute.
 
-**The use of the 'after' field is critical to understand**. Each non-error FIS-B data query 
+**The use of the 'after' field is critical to understand**. Each non-error
+(non-static) FIS-B data query 
 will return an ``after`` field. You can use this value in a query string to return only
 those results which occurred *after* the ``after`` time.
 
-The only exception to the ``after`` field are 'static' requests. These are requests that don't
-reference FIS-B data, but other static data. You can always tell these requests because the
-first part of the request will start with ``/static/``. For example, the request to get a list
-of the legend colors for all images is requested by: ::
-
-  http://127.0.0.1:5000/static/legend
-
-Static requests are exactly like any other request, except they will not return
-an ``after`` field, and supplying one to a request will have no effect.
-
-Returning to the topic of FIS-B requests, to get the most recent METAR for KIND: ::
+As an example, to get the most recent METAR for KIND you would send: ::
 
   http://127.0.0.1:5000/metar/kind
 
-might return: ::
+and it might return: ::
 
   {
     "after": "2021-06-23T02:03:41.221000Z",
@@ -99,7 +102,7 @@ A couple of points about the ``after`` parameter:
 
 * If you get a new result, it means something changed from the old
   result. Maybe a new image, maybe a NOTAM that didn't 
-  have any text changes but 
+  have any text changes, but 
   was resent and has a new expiration time.
 
 Result and Results
@@ -108,13 +111,18 @@ Result and Results
 There are two basic types of rest queries allowed: those that return
 a single result, and those that may return more than a single result.
 Queries that can at most return a single result will return the
-result as an object (dictionary) in the ``result`` field. If the query *might*
+result as an object in the ``result`` field. If the query *might*
 return more than one result, it will return a list of objects in the ``results``
 field. Note the difference in name. If a query that can return more
 than one result only returns one result, it will still return a 
-``results`` field with a list containing only one item in it. The documentation
-will clearly state for each query if it will return only one, or more than
-one item.
+``results`` field with a list containing only one item in it.
+
+You can
+tell which calls return a single result and which return multiple
+results by looking at the call definition. If the definition has 
+'(M)' at the beginning, it will return multiple objects using the
+``"results"`` field. It it starts with '(1)', it will at most return
+a single item using the ``"result"`` field.
 
 See the METAR example above as an example of a query only returning
 one item. If we sent: ::
@@ -152,14 +160,15 @@ We would get back a ``results`` field with a list of many results. ::
 Query Strings
 -------------
 
-Query strings appear after a question mark ('``?``') in a request and had a name,
-an equal sign ('``=``'), are followed with a value. Multiple query strings are
+Query strings appear after a question mark ('``?``') in a request and have a name,
+an equal sign ('``=``'), and are followed with a value. Multiple query strings are
 separated by ampersand ('``&``') characters.
 
 In FIS-B Rest, query parameters will modify the request in some way. Most
-query parameters only affect a small portion of requests. In the description
-of each request there will be a list of which parameters are associated with
-each request and what actions they perform.
+query parameters only affect a small portion of requests.
+The 'after' and 'limit' query strings can be used with almost all queries.
+It will be noted in the documentation if the other query strings are useful for
+a particular rest call.
 
 **after=**
   Will return results that were created after this value. This value
@@ -181,7 +190,7 @@ each request and what actions they perform.
   positive integers and low must be <= high.
 
   Typically, this applies to G-AIRMET, SIGMET/WST, AIRMET,
-  NOTAM-TRA, and NOTAM-TFR. It does not apply to NOTAM-D-SUA
+  NOTAM-TRA, NOTAM-TMOA, and NOTAM-TFR. It does not apply to NOTAM-D-SUA
   (for complicated reasons discussed when we describe this
   type of object).
 
@@ -206,11 +215,11 @@ each request and what actions they perform.
 
 
 **lat=, lon=**
-  If a latitude and a longitude is provided, AND the selected object is A
+  If a latitude and a longitude is provided, AND the selected object is a
   polygon or a set of polygons, the object will be returned only if
-  the latitude and longitude are within the polygon. You mist
+  the latitude and longitude are within the polygon. You must
   supply both a latitude and longitude (as integer or floating point
-  values) and they must have valid values (latitude -90 to 90,
+  values), and they must have valid values (latitude -90 to 90,
   longitude -180 to 180).
 
   These query strings will not filter out any objects to which
@@ -249,7 +258,7 @@ We will next discuss the individual REST directives
 and the results they return. Different objects have
 fields depending on their type, but all objects have
 a number of fields in common. We will discuss those
-here and not mention again.
+here and not mention them again.
 
 Again, there are two types of REST requests, those that
 are FIS-B related, and those that are static. The fields
@@ -257,7 +266,8 @@ mentioned below are only FIS-B related.
 
 ``"expiration_time"``
   Time the message should expire in ISO-8601 UTC. FISB Rest will
-  not send an update when an object expires. That is up to you.
+  not send an update when an object expires. It is up to you to
+  delete expired objects.
   All objects will have this field.
 
 ``"type"``
@@ -269,12 +279,11 @@ mentioned below are only FIS-B related.
   This is a unique identifier within a particular 'type'. If you combine
   the 'type' and 'unique_name' strings you will get a primary key valid
   across all FISB objects. Internally, FISB Rest combines the
-  'type' and 'unique_name' fields with a dash to get internal
-  primary key.
+  'type' and 'unique_name' fields with a dash to get a primary key.
   All objects will have this field.
 
 ``"geojson"``
-  All graphical objects other than images (i.e. objects with vector data)
+  All graphical objects other than images (which are 'png' files)
   will have a 'geojson' field. This is in standard geojson format.
   **ALL** geojson objects have at their outer layer a ``FeatureCollection``
   with a ``features`` list. The ``features`` list will have one or more
@@ -288,11 +297,7 @@ mentioned below are only FIS-B related.
   LineSting). Each ``FeatureCollection`` will only have one type of
   geometry.
 
-  Also note that some objects can have more than one geometry. The principle
-  is that fields outside of a geojson field apply to the entire object,
-  but ``"properties"`` within a geojson object apply only to that geography.
-  They may also apply to the entire object (placed there to benefit a mapping
-  API), but they don't have to.
+  Also note that some objects can have more than one geometry.
   The ``"properties"`` field will vary dependent on the 'type' of object. These
   will be documented for each individual object type except for a few common
   items discussed here.
@@ -336,10 +341,7 @@ mentioned below are only FIS-B related.
           "features": [
               {
                   "geometry": {
-                      "coordinates": [
-                          -90.648,
-                          36.404
-                      ],
+                      "coordinates": [-90.648, 36.404],
                       "type": "Point"
                   },
                   "properties": {
@@ -359,7 +361,6 @@ mentioned below are only FIS-B related.
   * ``AIRMET``
   * ``SIGMET`` (includes WST (Convective Sigmet))
   * ``CWA`` (Center Weather Advisory),
-  * ``SUA`` (Not the NOTAM-D SUA, but the old SUA message)
   * ``G_AIRMET``
   
   If this field is present in a message, the message must be cancelled. It is only
@@ -400,13 +401,13 @@ mentioned below are only FIS-B related.
   all NOTAM subtypes.
 
 ``"station"``
-  Some objects, such as CRL and RSR objects are dependent on a 
+  Some objects, such as CRL and RSR objects, are dependent on a 
   particular ground station. The best identifier for the station
   is its latitude and longitude. The value of the ``"station"``
   field is the latitude and longitude combined with a tilde
   character such as ``'40.0383~-86.255593'``. One advantage of
   this scheme is that the standard in some cases requires you
-  to show the latitude and longitude of all stations, and 
+  to show the latitude and longitude of all ground stations, and 
   you can un-parse the ground station id to get this information.
 
 REST API and Message Descriptions
@@ -416,7 +417,7 @@ All items
 ^^^^^^^^^
 ::
 
-  /all
+  (M) /all
 
 Will return all current reports. This is essentially a dump of the
 database. 
@@ -430,10 +431,15 @@ METARs
 ^^^^^^
 ::
 
-  /metar
-  /metar/<4 character id>
+  (M) /metar
+  (1) /metar/<4 character id>
 
 Return all METAR reports or a single METAR report.
+
+Fields:
+
+``"observation_time"``
+  Time the observation was made.
 
 Example: ::
 
@@ -448,10 +454,7 @@ Example: ::
             "features": [
                 {
                     "geometry": {
-                        "coordinates": [
-                            -86.9475,
-                            40.4125
-                        ],
+                        "coordinates": [-86.9475, 40.4125],
                         "type": "Point"
                     },
                     "properties": {
@@ -469,17 +472,27 @@ Notes:
 
 * Will have a ``"geojson"`` field if configured for locations. This
   will always be a 'Point'.
-* ``"observation_time"``: Time the observation was made.
 * The expiration time is typically 2 hours after the observation time.
 
 TAFs
 ^^^^
 ::
 
-  /taf
-  /taf/<4 character id>
+  (M) /taf
+  (1) /taf/<4 character id>
 
-Return all TAF reports, or a single report.
+Return all Terminal Area Forecast (TAF) reports, or a single report.
+
+Fields:
+
+``"issued_time"``
+  Time the forecast was issued by NWS.
+
+``"valid_period_begin_time"``
+  Starting time of the forecast.
+
+``"valid_period_end_time"``
+  Ending time of the forecast. This is also the expiration time.
 
 Example: ::
 
@@ -499,10 +512,7 @@ Example: ::
         "features": [
             {
                 "geometry": {
-                    "coordinates": [
-                        -86.2816,
-                        39.72518
-                    ],
+                    "coordinates": [-86.2816, 39.72518],
                     "type": "Point"
                 },
                 "properties": {
@@ -520,26 +530,42 @@ Notes:
 
 * Will have a ``"geojson"`` field if configured for locations. This
   will always be a 'Point'.
-* ``"issued_time"``: Time the forecast was issued by NWS.
-* ``"valid_period_begin_time"``: Starting time of the forecast.
-* ``"valid_period_end_time"``: Ending time of the forecast. This is
-  also the expiration time.
 
 Winds Aloft Forecasts
 ^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-  /wind-06
-  /wind-06/<3 character id>
-  /wind-12
-  /wind-12/<3 character id>
-  /wind-24
-  /wind-24/<3 character id>
+  (M) /wind-06
+  (1) /wind-06/<3 character id>
+  (M) /wind-12
+  (1) /wind-12/<3 character id>
+  (M) /wind-24
+  (1) /wind-24/<3 character id>
 
 Return winds aloft forecast for all stations or a single station. 
 Winds aloft forecasts are issued 6, 12, and 24 hours in advance.
 Wind forecasts use a 3 character id, rather than 4.
+
+Fields:
+
+``"model_run_time"``
+  Time the winds aloft model was run to generate
+  the report.
+
+``"issued_time``"
+  When the report was issued.
+
+``"valid_time``"
+  Time at which the forecast is designed to model. This
+  is a single point in time.
+
+``"for_use_from_time"``
+  Starting time the forecast can be used.
+
+``"for_use_to_time"``
+  Time the forecast should no longer be used.
+  This is also the expiration time.
 
 Example: ::
 
@@ -564,25 +590,34 @@ Notes:
 
     3000    6000    9000   12000   18000   24000  30000  34000  39000
     1919 2219+17 2217+12 2208+04 3012-09 2819-20 281435 363145 317257
-* ``"model_run_time"``: Time the winds aloft model was run to generate
-  the report.
-* ``"issued_time``": When the report was issued.
-* ``"valid_time``": Time at which the forecast is designed to model. This
-  is a single point in time.
-* ``"for_use_from_time"``: Starting time the forecast can be used.
-* ``"for_use_to_time"``: Time the forecast should no longer be used.
-  This is also the expiration time.
 
 PIREPs
 ^^^^^^
 
 ::
 
-  /pirep
+  (M) /pirep
 
 Returns all available PIREPs.
-Will have a ``"geojson"`` field if configured for location. This is most
+Will have a ``"geojson"`` field if configured for location (and the
+location can be decoded). This is most
 commonly a 'Point', but in the case of a route, may also be a LineString.
+
+Fields:
+
+``"station"``
+  Nearest weather reporting location.
+
+``"report_type"``
+  Either ``UA`` for normal PIREP or ``UUA`` for urgent.
+
+``"report_time"``
+  Time the report was made. There are two ways FIS-B
+  Decode can be configured. The way the standard suggests is to just keep
+  the report active until an hour or so after it is last transmitted.
+  This can result in PIREPs hanging around for 4 hours or more. It can
+  also be configured to delete the PIREP so many minutes after the report
+  time (2 hours is a good value). This is the preferred method.
 
 Example of a PIREP that is a Point: ::
 
@@ -605,10 +640,7 @@ Example of a PIREP that is a Point: ::
         "features": [
             {
                 "geometry": {
-                    "coordinates": [
-                        -88.895286,
-                        43.218243
-                    ],
+                    "coordinates": [-88.895286, 43.218243],
                     "type": "Point"
                 },
                 "properties": {
@@ -661,16 +693,9 @@ Notes:
 * While FIS-B Decode can parse about 90-95% of all locations, it can not
   parse them all. PIREPs (especially by tower controllers) do not always
   follow a set format, since they can be hand entered.
-* ``"station"``: Nearest weather reporting location.
-* ``"report_type"``: Either ``UA`` for normal PIREP or ``UUA`` for urgent.
-* ``"report_time"``: Time the report was made. There are two ways FIS-B
-  Decode can be configured. The way the standard suggests is to just keep
-  the report active until an hour or so after it is last transmitted.
-  This can result in PIREPs hanging around for 4 hours or more. It can
-  also be configured to delete the PIREP so many minutes after the report
-  time (2 hours is a good value). This is the preferred method.
-* The identifier immediately after 'PIREP' ('PIREP MSN' in our example)
-  is totally made-up garbage by the FIS-B creator. Do not use it. The
+* The identifier immediately after 'PIREP' ('PIREP MSN' or 'PIREP ACO'
+  in our examples)
+  is totally made-up garbage by the FIS-B creator. **Do not use it**. The
   ``"station"`` field is from the FAA and is safe to use.
 * The report is parsed into its basic fields. If a field name is not
   in the report, it will not be listed. These are:
@@ -692,9 +717,9 @@ SIGMET/WST, AIRMET, CWA
 
 ::
 
-  /sigmet
-  /airmet
-  /cwa
+  (M) /sigmet
+  (M) /airmet
+  (M) /cwa
 
 Provides all available SIGMET/WSTs, AIRMETs, and
 CWAs (Center Weather Advisory). From a returned object perspective,
@@ -702,7 +727,8 @@ they are all identical except for their subject matter. SIGMET
 includes WSTs (Convective SIGMETs).
 
 One important thing to remember is that all of these objects can
-have both a text and object portion. Only the text portion is mandatory.
+have both a text and graphics portion (that are sent separately 
+by FIS-B). Only the text portion is mandatory.
 Per the standard, if a text portion is received, it is immediately sent
 out. If a graphic portion arrives, it is combined with the text portion
 and both are sent out as a single report. If a graphic portion never
@@ -710,6 +736,25 @@ gets a matching text portion, it is never sent out.
 
 In the example below, the only difference if this was only a text only
 AIRMET would be that the ``"geojson"`` field would be missing.
+
+Fields:
+
+``"issued_time``"
+  When the report was issued.
+
+``"for_use_from_time"``
+  Starting time the forecast can be used.
+
+``"for_use_to_time"``
+  Time the forecast should no longer be used.
+  This is also the expiration time.
+
+``"subtype"``
+  This only applies to 'type' SIGMET. The value of
+  subtype will be one of:
+
+  * ``SIGMET``
+  * ``WST``
 
 Example: ::
 
@@ -775,12 +820,6 @@ Notes:
 
 * ``"cancel"``: Present only when cancelled. Always check for this first
   and delete the report. No other processing required.
-* ``"issued_time``": When the report was issued.
-* ``"valid_time``": Time at which the forecast is designed to model. This
-  is a single point in time.
-* ``"for_use_from_time"``: Starting time the forecast can be used.
-* ``"for_use_to_time"``: Time the forecast should no longer be used.
-  This is also the expiration time.
 * **lat=** and **lon=** are valid query strings. If present, only those
   results which contain the supplied point will be returned.
 * **high=** and **low=** are valid query strings. If present, only those
@@ -791,13 +830,31 @@ G-AIRMET
 
 ::
 
-  /g-airmet
-  /g-airmet-00
-  /g-airmet-03
-  /g-airmet-06
+  (M) /g-airmet
+  (M) /g-airmet-00
+  (M) /g-airmet-03
+  (M) /g-airmet-06
 
 Return all G-AIRMETS. The 00, 03, and 06 variants will only return G-AIRMETs
 of that type.
+
+Fields:
+
+``"subtype"``
+  One of 0, 3, or 6, dependent if this is a 00, 03, or 06
+  hour G-AIRMET. '/g-airmet' will select all of these. '/g-airmet-00', 
+  '/g-airmet-03', and '/g-airmet-06' will only select a particular type.
+
+``"issued_time``"
+  When the report was issued.
+
+``"for_use_from_time"``
+  Starting time the forecast can be used.
+
+``"for_use_to_time"``
+  Time the forecast should no longer be used.
+  This is also the expiration time.
+
 
 Example: ::
 
@@ -846,19 +903,12 @@ Notes:
 
 * ``"cancel"``: Present only when cancelled. Always check for this first
   and delete the report. No other processing required.
-* ``"subtype"``: One of 0, 3, or 6, dependent if this is a 00, 03, or 06
-  hour G-AIRMET. '/g-airmet' will select all of these. '/g-airmet-00', 
-  '/g-airmet-03', and '/g-airmet-06' will only select a particular type.
-* ``"issued_time``": When the report was issued.
-* ``"for_use_from_time"``: Starting time the forecast can be used.
-* ``"for_use_to_time"``: Time the forecast should no longer be used.
-  This is also the expiration time.
 * There is only a single graphical entry for each G-AIRMET.
 * Most G-AIRMETs return Polygons, but freezing level G-AIRMETs
   may return a Polygon or LineString.
 * The ``"properties"`` geojson field may contain the following fields:
    ``"conditions"``
-      If the reason for the G-AIRMET is IFR or mountain Obscuration
+      If the reason for the G-AIRMET is IFR or Mountain Obscuration
       conditions, this field will list the conditions responsible. This
       will be a list with one or more of the following elements:
       
@@ -896,8 +946,8 @@ NOTAM (in general)
 
 ::
 
-/notam
-/notam/<4 character id>
+  (M) /notam
+  (M) /notam/<4 character id>
 
 Lists all NOTAMs of all types. If an id is specified, will find all
 NOTAMs associated with that id (i.e. the ``"location"`` field inside
@@ -910,21 +960,25 @@ There are basically two types of FIS-B NOTAMs. NOTAM-TFRs and all the rest.
 NOTAM-TFRs in FIS-B are repackaged by the FIS-B creator and have differences
 with the other NOTAMs in terms of format.
 
-I further divide NOTAM-Ds into two type: regular NOTAM-Ds and NOTAM-D-SUA.
-The NOTAM-D-SUAs are different, because they have an optional location field
+I further divide NOTAM-Ds into two types: regular NOTAM-Ds and NOTAM-D-SUAs.
+The NOTAM-D-SUAs are different, because they have an optional geojson field
 that is not produced by FIS-B, but loaded as an auxillary file. They also
 have some unique characteristics which must be considered.
 
 Fields common to all NOTAMs:
 
-* ``"subtype"``: The type of NOTAM. Will be one of:
+``"subtype"``
+  The type of NOTAM. Will be one of:
 
   * ``"TFR"``: NOTAM-TFR
   * ``"D"``: NOTAM-D
   * ``"D-SUA"``: NOTAM-D with SUA information.
   * ``"FDC"``: NOTAM-FDC
+  * ``"TRA"``: NOTAM-TRA
+  * ``"TMOA"``: NOTAM-TMOA
 
-* ``"number"``: This is the 'official' number of the NOTAM. It is what
+``"number"``
+  This is the 'official' number of the NOTAM. It is what
   should be shown to users. Do not use the ``"unique_name"``.
 
 Notes:
@@ -938,7 +992,7 @@ NOTAM-TFR
 
 ::
 
-/notam-tfr
+  (M) /notam-tfr
 
 NOTAM-TFRs may or may not be associated with a geojson object. If they
 are, the object may have multiple components.
@@ -988,28 +1042,37 @@ Notes:
 
 * ``"cancel"``: Present only when cancelled. Always check for this first
   and delete the report. No other processing required.
+* **lat=** and **lon=** are valid query strings. If present, only those
+  results which contain the supplied point will be returned.
+* **high=** and **low=** are valid query strings. If present, only those
+  results that fall within a certain altitude range will be returned.
 
 NOTAM-D and NOTAM-FDC
 ^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-/notam-d
-/notam-d/<4 character id>
-/notam-fdc
-/notam-fdc/<4 character id>
+  (M) /notam-d
+  (M) /notam-d/<4 character id>
+  (M) /notam-fdc
+  (M) /notam-fdc/<4 character id>
 
-NOTAM-D (distant) and NOTAM-FDC (Flight Data Center)
+NOTAM-D (Distant) and NOTAM-FDC (Flight Data Center)
 have identical formats other than 
-the subtypes. Both may have geojson 'Point' objects.
+the subtype. Both may have geojson 'Point' objects.
 
-These objects (as well as the NOTAM-D-SUA, NOTAM-TMOA and
+These objects (as well as the NOTAM-D-SUA, NOTAM-TMOA, and
 NOTAM-TRA objects to be described later) will have the following
 fields:
 
-* ``"accountable"``: Accountable 
-* ``"affected"``: Airport affected.
-* ``"keyword"``: Notam type. For non-NOTAM-FDCs, one of:
+``"accountable"``
+  Accountable entity.
+
+``"affected"``
+  Facility (usually airfield) primarily affected.
+
+``"keyword"``
+  Notam type. For non-NOTAM-FDCs, one of:
 
   * RWY: Runway
   * TWY: Taxiway
@@ -1097,16 +1160,16 @@ Notes:
 * ``"cancel"``: Present only when cancelled. Always check for this first
   and delete the report. No other processing required.
 * Since airports are located on the ground, the ``"altitudes"`` list will
-  always show 0 AGL for hight and low altitudes.
-* These NOTAMs will have only 'Point' geojson objects if they have any at all.
+  always show 0 AGL for high and low altitudes.
+* These NOTAMs will have only 'Point' geojson objects, if they have any at all.
 
 NOTAM-D-SUA
 ^^^^^^^^^^^
 
 ::
 
-/notam-d-sua
-/notam-d-sua/<4 character ARTCC location>
+  (M) /notam-d-sua
+  (M) /notam-d-sua/<4 character ARTCC location>
 
 NOTAM-D SUAs are used to activate special use airspace that, in addition to
 regularly active times, also have the provision 'other times by NOTAM'.
@@ -1133,27 +1196,31 @@ documented in SUA definition files, the area may not be in the file
 
 Fields unique to NOTAM-D SUA:
 
-  * ``"airspace"``: This is the special use airspace official name.
-  * ``"altitude_text"``: A text string that defines the altitudes to 
-    be used. See the caution about this under the ``"altitudes"`` item
-    below.
-  * ``"altitudes"``: This is in the exact same form as the altitudes
-    field for other objects, but it isn't quite the same. The first
-    item is the high altitude, followed by the high altitude type, then
-    the low altitude and low altitude type (just like all the other
-    ``"altitudes"`` fields).
+``"airspace"``
+  This is the special use airspace official name.
 
-    However, remember that special use airspaces may have multiple
-    geographic areas, each with their own altitudes. We really can't be
-    sure how that applies in a given NOTAM-D SUA. That is why, unlike other
-    ``"altitudes"`` fields, this one is placed at the top level of the object
-    and not inside a ``"geojson"`` field. A good display program would point
-    this out when displaying any FAA SUA altitude information.
+``"altitude_text"``
+  A text string that defines the altitudes to 
+  be used. See the caution about this under the ``"altitudes"`` item
+  below.
 
-    Also, it is not clear what altitudes are AGL or MSL. Flight levels are 
-    considered MSL, ``SFC`` is considered AGL, but the usual reference is just
-    ``'FT'``. If we can't determine AGL or MSL, we are forced to use what
-    they tell use, and that is ``'FT'``.
+``"altitudes"``: This is in the exact same form as the altitudes
+  field for other objects, but it isn't quite the same. The first
+  item is the high altitude, followed by the high altitude type, then
+  the low altitude and low altitude type (just like all the other
+  ``"altitudes"`` fields).
+
+  However, remember that special use airspaces may have multiple
+  geographic areas, each with their own altitudes. We really can't be
+  sure how that applies in a given NOTAM-D SUA. That is why, unlike other
+  ``"altitudes"`` fields, this one is placed at the top level of the object
+  and not inside a ``"geojson"`` field. A good display program would point
+  this out when displaying any FAA SUA altitude information.
+
+  Also, it is not always clear what altitudes are AGL or MSL. Flight levels are 
+  considered MSL, ``SFC`` is considered AGL, but the usual reference is just
+  feet (``'FT'``). If we can't determine AGL or MSL, we are forced to use what
+  they tell use, and that is ``'FT'``.
 
 Example: ::
 
@@ -1176,7 +1243,8 @@ Example: ::
     ],
     "start_of_activity_time": "2021-06-25T23:00:00Z",
     "end_of_validity_time": "2021-06-26T05:00:00Z",
-    "contents": "!SUAC 06/582 ZKC AIRSPACE R4501F ACT SFC-3200FT 2106252300-2106260500",
+    "contents": "!SUAC 06/582 ZKC AIRSPACE R4501F ACT SFC-3200FT
+                 2106252300-2106260500",
     "expiration_time": "2021-06-26T05:00:00Z",
     "geojson": {
         "features": [
@@ -1193,8 +1261,10 @@ Example: ::
                 },
                 "properties": {
                     "name": "R-4501F",
-                    "remarks": "EXCLUDES R-4501A, R-4501B, AND R-4501C WHEN ACTIVE",
-                    "times_of_use": "0700 - 1800, DAILY; OTHER TIMES BY NOTAM 24 HOURS IN ADVANCE",
+                    "remarks": "EXCLUDES R-4501A, R-4501B, AND R-4501C
+                                WHEN ACTIVE",
+                    "times_of_use": "0700 - 1800, DAILY; OTHER TIMES BY
+                                     NOTAM 24 HOURS IN ADVANCE",
                     "type": "R"
                 },
                 "type": "Feature"
@@ -1223,16 +1293,18 @@ Notes:
   ``'C'``, or ``'W'`` for East, Central, or West.
 * The ``"location"`` field will be (for CONUS) the three letter code for an ARTCC
   with a 'K' at the front (i.e. ``KZID``).
+* **lat=** and **lon=** are valid query strings. If present, only those
+  results which contain the supplied point will be returned.
 
 NOTAM-TMOA, NOTAM-TRA
 ^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-/notam-tmoa
-/notam-tmoa/<4 letter SUAx location>
-/notam-tra
-/notam-tra/<4 letter SUAx location>
+  (M) /notam-tmoa
+  (M) /notam-tmoa/<4 letter SUAx location>
+  (M) /notam-tra
+  (M) /notam-tra/<4 letter SUAx location>
 
 These NOTAMs are basically NOTAM-D-SUAs, but the NOTAM itself provides
 the geometry.
@@ -1242,22 +1314,67 @@ opposed to D-SUA NOTAMs which use ARTCC site names (KZID, etc).
 
 Example: ::
 
-  <no example available>
+  {
+    "type": "NOTAM",
+    "unique_name": "8-142",
+    "subtype": "TMOA",
+    "keyword": "AIRSPACE",
+    "location": "SUAC",
+    "number": "08/142",
+    "accountable": "SUAC",
+    "affected": "ZOB",
+    "airspace": "STINGER TEMPORARY MOA",
+    "altitude_text": "6000FT UP TO BUT NOT INCLUDING FL180",
+    "contents": "!SUAC 08/142 ZOB AIRSPACE STINGER TEMPORARY MOA ACT 6000FT UP
+                 TO BUT NOT INCLUDING FL180 2106281700-2106291800",
+    "start_of_activity_time": "2021-06-28T17:00:00Z",
+    "end_of_validity_time": "2021-06-29T18:00:00Z",
+    "expiration_time": "2021-06-29T18:00:00Z",
+    "geojson": {
+        "features": [
+            {
+                "geometry": {
+                    "coordinates": [
+                        [-84.246597, 41.191864],
+                        [-84.37294,  40.870514],
+                        [-83.937607, 40.810776],
+                        [-83.823624, 41.176758],
+                        [-84.246597, 41.191864]
+                    ],
+                    "type": "Polygon"
+                },
+                "properties": {
+                    "airport_id": "KZOB",
+                    "altitudes": [18000, "MSL", 6000, "MSL"],
+                    "id": "8-142",
+                    "start_time": "2021-06-28T17:00:00Z",
+                    "stop_time": "2021-06-29T18:00:00Z"
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+    }
+  }
 
 Notes:
 
 * ``"cancel"``: Present only when cancelled. Always check for this first
   and delete the report. No other processing required.
 * These will not have a top-level ``"altitudes"`` field. The ``"altitudes"``
-  field will be inside the geojson object. The only altitude types will be
-  AGL and MSL.
+  field will be inside the geojson object(s). The only altitude types will be
+  AGL and MSL (they may be mixed).
+* **lat=** and **lon=** are valid query strings. If present, only those
+  results which contain the supplied point will be returned.
+* **high=** and **low=** are valid query strings. If present, only those
+  results that fall within a certain altitude range will be returned.
 
 FIS-B Unavailable
 ^^^^^^^^^^^^^^^^^
 
 ::
 
-  /fis-b-unavailable
+  (M) /fis-b-unavailable
   
 Returns FIS-B Unavailable reports. Each report will be in
 a separate object. Per the standard, these must be made
@@ -1267,6 +1384,45 @@ by some long absence of the actual data, so you will probably
 notice the missing data long before FIS-B tells you about it.
 It will send these messages for Guam, San Juan, Alaska, and
 Hawaii, even if you are in the continental U.S.
+
+Fields:
+
+``"product"``
+  Short coded text description of the unavailable product.
+  Will be one of:
+
+  * ALASKA NEXRAD
+  * CLOUD TOPS
+  * CWA
+  * D-NOTAM
+  * FDC-NOTAM
+  * G-AIRMET
+  * GUAM NEXRAD
+  * HAWAII NEXRAD
+  * ICING
+  * LIGHTNING
+  * METAR
+  * NEXRAD IMAGERY
+  * NOTAM-D-CANCEL
+  * NOTAM-FDC-CANCEL
+  * PIREP ICING
+  * PIREP TURBULENCE
+  * PIREP URGENT
+  * PIREP WIND SHEAR
+  * ROUTINE PIREP
+  * SAN JUAN NEXRAD
+  * SIGMET/CONVECTIVE SIGMET
+  * SUA
+  * TAF
+  * TFR NOTAM
+  * TRA-NOTAM/TMOA-NOTAM
+  * TURBULENCE
+  * WINDS AND TEMPERATURE ALOFT
+
+``"centers"``
+  Locations affected by the outage (don't ask why the
+  above centers in the example, or the average C-172 CONUS
+  pilot, needs to know about Guam NEXRAD).
 
 Example: ::
 
@@ -1300,56 +1456,26 @@ Another example: ::
 
 Notes:
 
-* ``"product"``: Short coded text description of the unavailable product.
-  Will be one of:
-
-  * ALASKA NEXRAD
-  * CLOUD TOPS
-  * CWA
-  * D-NOTAM
-  * FDC-NOTAM
-  * G-AIRMET
-  * GUAM NEXRAD
-  * HAWAII NEXRAD
-  * ICING
-  * LIGHTNING
-  * METAR
-  * NEXRAD IMAGERY
-  * NOTAM-D-CANCEL
-  * NOTAM-FDC-CANCEL
-  * PIREP ICING
-  * PIREP TURBULENCE
-  * PIREP URGENT
-  * PIREP WIND SHEAR
-  * ROUTINE PIREP
-  * SAN JUAN NEXRAD
-  * SIGMET/CONVECTIVE SIGMET
-  * SUA
-  * TAF
-  * TFR NOTAM
-  * TRA-NOTAM/TMOA-NOTAM
-  * TURBULENCE
-  * WINDS AND TEMPERATURE ALOFT
-
-* ``"centers"``: Locations affected by the outage (don't ask why the
-  above centers in the example, or the average C-172 CONUS
-  pilot, need to know about Guam NEXRAD).
+* ``"cancel"``: Present only when cancelled. Always check for this first
+  and delete the report. No other processing required. THis is specified
+  in the standard, but I have never seen one of these cancelled. They are
+  left to expire.
 
 Cancelled Messages
 ^^^^^^^^^^^^^^^^^^
 
 ::
 
-  /cancel
-  /cancel-notam
-  /cancel-g-airmet
-  /cancel-cwa
-  /cancel-sigmet
-  /cancel-airmet
+  (M) /cancel
+  (M) /cancel-notam
+  (M) /cancel-g-airmet
+  (M) /cancel-cwa
+  (M) /cancel-sigmet
+  (M) /cancel-airmet
 
 Will show recently cancelled messages. Note that these are
 messages specifically cancelled by FIS-B before their usual
-expiration time. '/cancel' will show all available cancelled
+expiration time. '/cancel' will show all recently cancelled
 messages. More specific types will only show those message
 types. Only TWGO messages can be cancelled. '/cancel/sigmet'
 will include SIGMET and WST messages.
@@ -1360,10 +1486,10 @@ See the earlier discussion about the meaning of the
 Example: ::
 
   {
-    "type": "G_AIRMET",
-    "unique_name": "21-9897",
-    "cancel": "21-9897",
-    "expiration_time": "2021-06-21T17:10:21Z"
+    "type": "NOTAM",
+    "unique_name": "21-12120",
+    "cancel": "21-12120",
+    "expiration_time": "2021-06-27T10:16:31Z"
   }
 
 Images
@@ -1371,8 +1497,8 @@ Images
 
 ::
 
-/image
-/image/<image-name>
+  (M) /image
+  (1) /image/<image-name>
 
 Return image metadata and link(s) to image file(s). The following are the
 available image names:
@@ -1387,60 +1513,72 @@ available image names:
   Cloud Tops image.
 
 **LIGHTNING**
-  Lightning image. This will produce two links. One called
+  Lightning image. This will produce two images in
+  the ``"urls"`` field. One called
   LIGHTNING_ALL for all lightning and the other called
   LIGHTNING_POS containing only positive lightning strikes.
 
 **ICING-02000** through **ICING-24000**
-  Icing image for each altitude. Icing produces three images:
+  Icing image for each altitude. Icing produces three images
+  in the ``"urls"`` field:
   ICING_xxxxx_PRB, ICING_xxxxx_SEV, and ICING_xxxxx_SLD for
-  icing probability, severity, and super large droplet probability.
+  icing probability, severity, and super large droplet
+  probability, respectively.
 
 **TURBULENCE-02000** through **TURBULENCE-24000**
   Turbulence image for each altitude.
 
 Fields with particular meaning for images:
 
-  * ``"bbox"``: Bounding box. Used by slippy map javascript
-    libraries to place the 'png' file in the image. The contents is
-    a list contain 2 elements, each a two item list. The first
-    element is the coordinate of the NW corner of the image, and
-    the second is the coordinates of the SE corner of the image.
-    Unlike almost all other FIS-B Rest coordinates, these are in
-    latitude first, then longitude order.
+``"bbox"``
+  Bounding box. Used by slippy map javascript
+  libraries to place the 'png' file in the image. The contents is
+  a list containing 2 elements, each a two item list. The first
+  element is the coordinate of the NW corner of the image, and
+  the second is the coordinates of the SE corner of the image.
+  Unlike almost all other FIS-B Rest coordinates, these are in
+  latitude first, then longitude order.
 
-  * ``"valid_time"``: Valid time of a forecast image in ISO-8601 format.
-    Images that are forecasts will have a ``"valid_time"`` field, and
-    images that are observations will have an ``"observation_time"`` field.
-    Only one or the other will appear.
+``"valid_time"``
+  Valid time of a forecast image in ISO-8601 format.
+  Images that are forecasts will have a ``"valid_time"`` field, and
+  images that are observations will have an ``"observation_time"`` field.
+  Only one or the other will appear.
 
-  * ``"observation_time"``: Observation time of an observation in
-    ISO-8601 format. Only radar images and lightning are observations.
-    All other images are forecasts. 
+``"observation_time"``
+  Observation time of an observation in
+  ISO-8601 format. Only radar images and lightning are observations.
+  All other images are forecasts. 
 
-    All of the observation images can have a 10 minute variance. That
-    means newer observations can blend with older observations until
-    the oldest observation is 10 minutes or older than the newest
-    image. Then its data must disappear. The oldest data will be considered
-    the observation time.
+  All of the observation images can have a 10 minute variance. That
+  means newer observations can blend with older observations until
+  the oldest observation is 10 minutes or older than the newest
+  image. Then its data must disappear. The oldest data will be considered
+  the observation time.
 
-    In practice, this really only applies to NEXRAD regional radar
-    and lightning.
-    NEXRAD CONUS is sent every 15 minutes, so it doesn't apply.
-    Lighting is sent every 5 minutes, so a single image can have data
-    from 2 images. NEXRAD regional can have data from 5 images since
-    it is sent every 2 minutes.
+  Why this is useful is often seen in NEXRAD REGIONAL radar. When you get a
+  new image, you overwrite all the old data. But if some of the new data is
+  missing, but present in an older image, the older data will remain and
+  fill-in the newer missing data.
 
-  * ``"urls"``: This is an object (dictionary) whose key is the name
-    of an image, and whose value is a URL pointing to that image.
-    Icing and lightning images can have multiple images per product.
-    All others only have a single image.
+  In practice, this really only applies to NEXRAD regional radar
+  and lightning images.
+  NEXRAD CONUS is sent every 15 minutes, so it doesn't apply.
+  Lighting is sent every 5 minutes, so a single image can have data
+  from 2 images. NEXRAD regional can have data from 5 images since
+  it is sent every 2 minutes.
 
-    You may note that the name of the '.png' file associated with an
-    image is a set of random characters that changes for each image
-    update. This is so there is no chance of an image changing during
-    the time an image object is in use. These images will be deleted
-    after their maximum possible life (135 minutes).
+``"urls"``
+  This is an dictionary whose key is the name
+  of an image, and whose value is a URL pointing to that image.
+  Icing and lightning images can have multiple images per product.
+  All others only have a single image.
+
+  You may note that the name of the '.png' file associated with an
+  image is a set of random characters that changes for each image
+  update. This is so there is no chance of an image changing during
+  the time an image object is in use. These images will be deleted
+  after their maximum possible life (135 minutes).
 
 Example of an image with a single link: ::
 
@@ -1476,36 +1614,34 @@ Example of an image with multiple links: ::
     },
   }
 
-Notes:
-
 Current Report List (CRL)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-/crl-8              (or /crl-notam-tfr)
-/crl-8/<station>
-/crl-11             (or /crl-airmet)
-/crl-11/<station>
-/crl-12             (or /crl-sigmet)
-/crl-12/<station>
-/crl-14             (or /crl-g-airmet)
-/crl-14/<station>
-/crl-15             (or /crl-cwa)
-/crl-15/<station>
-/crl-16             (or /crl-notam-tra)
-/crl-16/<station>
-/crl-17             (or /crl-notam-tmoa)
-/crl-17/<station>
+  (M) /crl-8              (or /crl-notam-tfr)
+  (1) /crl-8/<station>
+  (M) /crl-11             (or /crl-airmet)
+  (1) /crl-11/<station>
+  (M) /crl-12             (or /crl-sigmet)
+  (1) /crl-12/<station>
+  (M) /crl-14             (or /crl-g-airmet)
+  (1) /crl-14/<station>
+  (M) /crl-15             (or /crl-cwa)
+  (1) /crl-15/<station>
+  (M) /crl-16             (or /crl-notam-tra)
+  (1) /crl-16/<station>
+  (M) /crl-17             (or /crl-notam-tmoa)
+  (1) /crl-17/<station>
 
 Current Report Lists contain the reports sent by a particular
-station for a certain subset of messages.
+ground station for a certain subset of messages.
 If you wish to get a CRL only for a particular '<station>', you
-may do so. See the example for the form of a station.
+may do so. See the example for the form of a '<station>'.
 
 The number after CRL
 denotes the FIS-B product id.
-You can either refer to the CRL by FIS-B product id, or use an
+You can either refer to the CRL by the FIS-B product id, or use an
 alias. The product ids and aliases are:
 
 * 8: NOTAM-TFR [*alias: '/crl-notam-tfr'*]
@@ -1524,15 +1660,15 @@ all three ground stations.
 CRLs have the concept of 'completeness'. If you have a copy of
 each message in the CRL, that CRL is said to be 'complete'. If
 the CRL doesn't show any messages for that type, the CRL is also
-considered complete. If there is no CRL of a particular type,
-that CRL is considered 'incomplete'. If a particular CRL type
+considered complete. If there is no CRL for a particular type,
+that CRL is considered 'incomplete' (). If a particular CRL type
 has messages with both a text and a graphics portion, both must
 be present in order to be considered complete.
 
 CRLs can have a maximum number of 138 reports. If there are more
 than 138 items, the overflow field will be set to 1.
 The standard calls the state where the overflow
-field is set, and all the other CRLs are present as 'Indeterminate'.
+field is set, and all the other CRLs are present, as 'Indeterminate'.
 
 Fields with importance to CRL objects:
 
@@ -1570,11 +1706,12 @@ Fields with importance to CRL objects:
   Look-ahead range of the product in nautical miles.
   Different CRL types have different look-ahead ranges.
   Look-ahead range is also determined by the type of 
-  ground station (surface, low, medium, high).
+  ground station (surface, low, medium, or high).
 
 ``"reports"``
   List of all possible reports. If the list is empty, there are
-  no reports available for this CRL type.
+  no reports available for this CRL type. There will always be
+  a ``"reports"`` field.
 
   Each line will have a format like: ::
 
@@ -1612,9 +1749,9 @@ Service Status
 
 ::
 
-/service-status
+  (M) /service-status
 
-Service status list all aircraft receiving TIS-B or ADS-R
+Service status lists all aircraft receiving TIS-B or ADS-R
 services.
 
 There is one of these objects for each ground station.
@@ -1653,7 +1790,7 @@ Reception Success Rate (RSR)
 
 ::
 
-/rsr
+  (1) /rsr
 
 The Reception Success Rate (RSR) is the percentage of
 messages you are receiving vs the maximum number of 
@@ -1688,17 +1825,17 @@ Example: ::
 Notes:
 
 * If no stations are being received, any RSR message will expire
-  and will not be created again until more 
+  and will not be created again until more messages arrive.
 
 SUA (replaced by NOTAM-D SUA)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-  /sua
+  (M) /sua
 
 These should no longer be used. They have been functionally
-replaced by NOTAM-D SUA. As of 2020 the product range has
+replaced by NOTAM-D SUAs. As of 2020 the product range has
 been reduced to 5 NM.
 
 Example: ::
@@ -1722,7 +1859,7 @@ Example: ::
 
 Notes:
 
-* Detailed description of fields will not be described, because you
+* Detailed description of the fields will not be described, because you
   should not use this. If you desire historical information, a
   good place to look is *Surveillance and Broadcast Services Description
   Document SRT-047 Revision 02* (2013). Revision 01 (2011) also has this information.
@@ -1734,7 +1871,7 @@ Image Legends (static)
 
 ::
 
-/static/legend
+  (1) /static/legend
 
 Returns single object containing colors, legend text, and
 units of measurement for all images.
@@ -1761,7 +1898,7 @@ and will be one of the following:
   Ordered list containing a set of two element lists consisting of:
   
     1. RGB (integer) color
-    2. Text value for the color.
+    2. Text description for that color.
 
   The ``"colors"`` list is ordered in the form it should be displayed.
 
@@ -1769,7 +1906,7 @@ and will be one of the following:
   the ``"ICING_SEV"`` image has a lower value than 'Heavy'.
   This is corrected by 'fisb-decode' and 'fisb-rest' (and is a
   moot point since the source FIS-B product doesn't actually have
-  a 'Severe' value).
+  a 'Severe' value-- but if they ever change this, you are set!).
 
 Example: ::
 

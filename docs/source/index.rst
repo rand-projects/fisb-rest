@@ -12,26 +12,15 @@ FIS-B Rest
 
    document
 
-Code
-====
+Packages
+========
 
-app
----
+.. toctree::
+   :maxdepth: 4
+   :caption: Contents:
 
-.. automodule:: app
-   :members:
-   :undoc-members:
-   :show-inheritance:
-      
-
-utilities
----------
-
-.. automodule:: utilities
-   :members:
-   :undoc-members:
-   :show-inheritance:  
-
+   app
+   
 Indices and tables
 ==================
 

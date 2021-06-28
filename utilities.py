@@ -198,7 +198,7 @@ def getStandardQueryItems(request):
             hasError = True
             errorString += 'Need both high and low parameters. '
 
-    return hasError, errorString, dt, limitInt, \
+    return hasError, errorString.strip(), dt, limitInt, \
         hasLatLong, latFloat, longFloat, hasHighLow, high, low
 
 def addCrlCompleteField(msg):
