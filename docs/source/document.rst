@@ -4,30 +4,106 @@ FIS-B Rest
 What is FIS-B Rest?
 -------------------
 
+FIS-B Rest is the REST Server for
+`FIS-B Decode <https://github.com/rand-projects/fisb-decode>`_.
+
+FIS-B Decode is a system that collects FIS-B messages-- storing and
+managing them in a Mongo database. FIS-B Rest is the REST Server that
+retrieves data from the database and returns JSON objects.
+
+`Flask <https://flask-restful.readthedocs.io/en/latest/>`_ is used
+as the web server.
+
+At this point, FIS-B Rest is very much in development, so we will
+not be doing all the usual production processes one would normally 
+do with Flask (at this time).
+
 Getting things running
 ----------------------
 
-::
+The first item is to get FIS-B Decode operational.
+Once you have done that, you may proceed to installing
+FIS-B Rest. 
+
+At this point in time, both FIS-B Decode and FIS-B Rest must
+reside on the same machine. The only reason for this is that 
+images are not stored in the database. If this ever changes,
+there is no longer any restriction requiring both to run from
+the same machine.
+
+For this discussion, we will assume that you cloned FIS-B Rest
+into the ``'fisb-rest'`` directory underneath your home directory.
+We will also assume that all of the prerequisites, such as
+``pip3``, have been installed as part of the 'fisb-decode'
+installation.
+
+For the following, change your directory (``cd``) to wherever
+you installed ``fisb-rest`` (usually ``~/fisb-rest``).
+
+Install Flask and friends: ::
 
    pip3 install -r misc/requirements.txt
 
-Add ~/.local/bin to your PATH: ::
+You may need to add ``~/.local/bin`` to your PATH (pip3 will
+point this out to you in the above step): ::
 
   PATH=$PATH:~/.local/bin
   export PATH
 
-::
+You will also want to put this into your ``~/.bashrc`` file.
+
+If you want to be able to build the documentation, run the following: ::
 
    pip3 install -r misc/requirements-sphinx.txt
 
-::
+Building the documentation is exactly like 'fisb-decode': ::
+
+  cd docs
+  ./makedocs
+  cd ..
+
+Next step is to make a symbolic link between Harvest's
+image files (usually located in
+``<somewhere>/fisb-decode/runtime/web-images``). Assuming
+you installed 'fisb-decode' under your home directory, the
+command would be: ::
 
    ln -s ~/fisb-decode/runtime/web-images static/png
 
-::
+The ``static`` subdirectory is where Flask stores its static contents.
+At this point, this is only the image files and an ``index.html`` placeholder.
+
+There is a configuration file in ``fisb-rest`` called
+``fisb_restConfig.py``. It should look something like: ::
+
+  #: Where to write error messages.
+  ERROR_FILENAME = 'FISB_REST.ERR'
+
+  #: MONGO URI
+  MONGO_URI = 'mongodb://localhost:27017/'
+
+Make sure that ``MONGO_URI`` is set to the same value as you are using
+for 'fisb-decode'.
+
+All that is left is to run Flask: ::
 
    flask run
-   
+
+And you are done! Almost. You probably want to install something
+like
+`postman <https://www.postman.com/>`_
+to send requests and see the results.
+
+The documentation contains details on all the server requests,
+as well as details on the returned JSON objects.
+The ``fisb-rest/docs`` directory has a PDF of the primary user guide
+material in the file ``fisb-rest-intro.pdf``. To see the complete 
+documentation, build the docs with ``'./makedocs'`` from the ``docs``
+subdirectory.
+
+The rest of this document describes important background information
+and details of the REST request and JSON results structure.
+
 Static and Non-Static Requests
 ------------------------------
 
@@ -38,7 +114,8 @@ as information about the colors and text to display as legend data for
 images. You can easily tell the difference between the two, because all
 static calls start with '/static/', such as '/static/legend'. They both
 use the basic return structure described below, but static calls do
-not return an 'after' field, since it has no meaning for them.
+not return an 'after' field
+(described shortly), since it has no meaning for them.
 
 Basic Return Structure
 ----------------------

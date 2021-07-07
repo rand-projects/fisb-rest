@@ -6,7 +6,7 @@
 __pycache__
 docs/source/_build/
 docs/build/
-venv/
+static/png
 *.ERR
 foo
 foo0
