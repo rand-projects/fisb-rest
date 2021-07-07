@@ -38,7 +38,7 @@ def metar():
     return util.returnMany({'type': 'METAR'}, request)
 
 @app.route("/metar/<id>")
-def metars(id):
+def metar_id(id):
     """Sends specific METAR.
 
     Args:
@@ -50,7 +50,7 @@ def metars(id):
     return util.returnOne({'type': 'METAR', 'unique_name': id.upper()}, request)
 
 @app.route("/taf")
-def tafs():
+def taf():
     """Sends all TAFs.
 
     Returns:
@@ -59,7 +59,7 @@ def tafs():
     return util.returnMany({'type': 'TAF'}, request)
 
 @app.route("/taf/<id>")
-def taf(id):
+def taf_id(id):
     """Sends specific TAF.
 
     Args:
@@ -71,7 +71,7 @@ def taf(id):
     return util.returnOne({'type': 'TAF', 'unique_name': id.upper()}, request)
 
 @app.route("/pirep")
-def pireps():
+def pirep():
     """Sends all PIREPS.
 
     Returns:

@@ -25,7 +25,7 @@ The first item is to get FIS-B Decode operational.
 Once you have done that, you may proceed to installing
 FIS-B Rest. 
 
-At this point in time, both FIS-B Decode and FIS-B Rest must
+Currently, both FIS-B Decode and FIS-B Rest must
 reside on the same machine. The only reason for this is that 
 images are not stored in the database. If this ever changes,
 there is no longer any restriction requiring both to run from
@@ -107,7 +107,7 @@ and details of the REST request and JSON results structure.
 Static and Non-Static Requests
 ------------------------------
 
-Almost all of the rest server calls are *non-static*. That means that 
+Almost all of the REST server calls are *non-static*. That means that 
 they return active, timed data from FIS-B. A few calls are *static*.
 These do not return active FIS-B data, but other fixed results, such
 as information about the colors and text to display as legend data for
@@ -120,13 +120,13 @@ not return an 'after' field
 Basic Return Structure
 ----------------------
 
-The only JSON field guaranteed to be in each returned object is ``status``.
+The only JSON field guaranteed to be in each returned object is ``"status"``.
 It will have one of two values: '0' if there were no errors, and '-1', if
 there were any errors. Note that this does not include regular web
 errors like 404 errors. Just errors where the query was close enough
 that a JSON object was returned.
 
-If you do get an ``status`` code of '-1', you will also get an ``error``
+If you do get an ``"status"`` code of '-1', you will also get an ``"error"``
 field which contains an error message.
 
 For example: ::
@@ -136,12 +136,12 @@ For example: ::
 would return: ::
 
   {
-    "error": "Need both lat and long parameters.",
     "status": -1
+    "error": "Need both lat and long parameters.",
   }
 
-If the ``status`` code is '0', you will get an object that contains
-``num_results`` and ``after`` fields.
+If the ``"status"`` code is '0', you will get an object that contains
+``"num_results"`` and ``"after"`` fields.
 
 For example: ::
 
@@ -150,18 +150,19 @@ For example: ::
 returns: ::
 
   {
-    "after": "2004-01-01T00:00:00Z",
-    "num_results": 0,
     "status": 0
+    "num_results": 0,
+    "after": "2004-01-01T00:00:00Z",
   }
 
-``num_results`` is the number of results. If there were any results, we would return a ``result`` or ``results``
+``"num_results"`` is the number of results. If there were any results,
+we would return a ``"result"`` or ``"results"``
 field depending on the query. We will cover this more in a minute.
 
-**The use of the 'after' field is critical to understand**. Each non-error
+**The use of the "after" field is critical to understand**. Each non-error
 (non-static) FIS-B data query 
-will return an ``after`` field. You can use this value in a query string to return only
-those results which occurred *after* the ``after`` time.
+will return an ``"after"`` field. You can use this value in a query string to return only
+those results which occurred *after* the ``"after"`` time.
 
 As an example, to get the most recent METAR for KIND you would send: ::
 
@@ -170,8 +171,9 @@ As an example, to get the most recent METAR for KIND you would send: ::
 and it might return: ::
 
   {
-    "after": "2021-06-23T02:03:41.221000Z",
+    "status": 0
     "num_results": 1,
+    "after": "2021-06-23T02:03:41.221000Z",
     "result": {
         "type": "METAR",
         "unique_name": "KIND",
@@ -180,26 +182,25 @@ and it might return: ::
         "expiration_time": "2021-06-23T03:54:00Z",
         "observation_time": "2021-06-23T01:54:00Z"
     },
-    "status": 0
   }
 
 If we wanted to get the most recent KIND METAR we can just repeat the query.
 But if we wanted a result only if a new METAR has been posted, we would
-add the ``after`` query string: ::
+add the ``after=`` query string: ::
 
   http://127.0.0.1:5000/metar/kind?after=2021-06-23T02:03:41.221000Z
 
 If there is no new result, we will get: ::
 
   {
-    "after": "2021-06-23T02:03:41.221000Z",
-    "num_results": 0,
     "status": 0
+    "num_results": 0,
+    "after": "2021-06-23T02:03:41.221000Z",
   }
 
-Once a new result arrives, we will get the full result.
+Once a new result arrives, we will get the full METAR.
 
-A couple of points about the ``after`` parameter:
+A couple of points about the ``after=`` parameter:
 
 * **Always use an 'after' value you got from FIS-B Rest**. Don't 
   make them up. This ensures you will always get the latest result.
@@ -212,20 +213,21 @@ A couple of points about the ``after`` parameter:
 Result and Results
 ------------------
 
-There are two basic types of rest queries allowed: those that return
-a single result, and those that may return more than a single result.
+There are two basic types of REST queries: those that return
+a single result, and those that return more than a single result.
 Queries that can at most return a single result will return the
-result as an object in the ``result`` field. If the query *might*
-return more than one result, it will return a list of objects in the ``results``
+result as an object in the ``"result"`` field. If the query *might*
+return more than one result, it will return a
+list of objects in the ``"results"``
 field. Note the difference in name. If a query that can return more
 than one result only returns one result, it will still return a 
-``results`` field with a list containing only one item in it.
+``"results"`` field with a list containing only one item in it.
 
 You can
 tell which calls return a single result and which return multiple
 results by looking at the call definition. If the definition has 
-'(M)' at the beginning, it will return multiple objects using the
-``"results"`` field. It it starts with '(1)', it will at most return
+**'(M)'** at the beginning, it will return multiple objects using the
+``"results"`` field. It it starts with **'(1)'**, it will at most return
 a single item using the ``"result"`` field.
 
 See the METAR example above as an example of a query only returning
@@ -233,11 +235,12 @@ one item. If we sent: ::
 
   http://127.0.0.1:5000/metar
 
-We would get back a ``results`` field with a list of many results. ::
+We would get back a ``"results"`` field with a list of many results. ::
 
   {
-    "after": "2021-06-23T03:09:30.380000Z",
+    "status": 0
     "num_results": 549,
+    "after": "2021-06-23T03:09:30.380000Z",
     "results": [
         {
             "type": "METAR",
@@ -258,7 +261,6 @@ We would get back a ``results`` field with a list of many results. ::
         << many results removed >>
         
       ],
-    "status": 0
   }
 
 Query Strings
@@ -270,14 +272,14 @@ separated by ampersand ('``&``') characters.
 
 In FIS-B Rest, query parameters will modify the request in some way. Most
 query parameters only affect a small portion of requests.
-The 'after' and 'limit' query strings can be used with almost all queries.
+The 'after=' and 'limit=' query strings can be used with almost all queries.
 It will be noted in the documentation if the other query strings are useful for
-a particular rest call.
+a particular REST call.
 
 **after=**
   Will return results that were created after this value. This value
-  should be obtained **ONLY** from the ``after`` field of a returned
-  JSON object. This field applies to all non-static rest queries.
+  should be obtained **ONLY** from the ``"after"`` field of a returned
+  JSON object. This field applies to all non-static REST queries.
 
   Form: ::
 
@@ -291,14 +293,14 @@ a particular rest call.
   Will return objects only if they are between two altitude limits
   given in feet (inclusive). Only applies to objects that have a 
   graphic component. They must always occur together, must be 
-  positive integers and low must be <= high.
+  positive integers, and low must be <= high.
 
   Typically, this applies to G-AIRMET, SIGMET/WST, AIRMET,
   NOTAM-TRA, NOTAM-TMOA, and NOTAM-TFR. It does not apply to NOTAM-D-SUA
   (for complicated reasons discussed when we describe this
   type of object).
 
-  Warning: Some TWGO (Text with Graphic Overlays) objects will
+  **Warning**: Some TWGO (Text with Graphic Overlays) objects will
   get a text segment before the graphic portion arrives. So the
   query will not catch the altitude limits. Since the object
   could not possibly meet criteria (see next paragraph), it will
@@ -342,7 +344,8 @@ a particular rest call.
 **limit=**
   Will limit the number of items returned to the specified
   amount. This only makes sense for those queries that may return
-  more than one object. The number must be an integer >= 1.
+  more than one object (i.e. the definition contains '(M)').
+  The number must be an integer >= 1.
   There is a default limit of 10,000 for all queries (more than
   you will ever need). If you specify a value higher than this,
   it will be reduced to 10,000.
@@ -360,7 +363,7 @@ FISB Object Principles
 
 We will next discuss the individual REST directives
 and the results they return. Different objects have
-fields depending on their type, but all objects have
+different fields depending on their type, but all objects have
 a number of fields in common. We will discuss those
 here and not mention them again.
 
@@ -399,14 +402,15 @@ mentioned below are only FIS-B related.
   and LineStrings. So can PIREPs (almost all PIREPs are point objects,
   but you can have a 'route' PIREP which will be rendered as a
   LineSting). Each ``FeatureCollection`` will only have one type of
-  geometry.
+  geometry (Point, Polygon, or LineString).
 
   Also note that some objects can have more than one geometry.
-  The ``"properties"`` field will vary dependent on the 'type' of object. These
-  will be documented for each individual object type except for a few common
-  items discussed here.
+  For example, a NOTAM-TFR may have multiple geometries with
+  different active times.
 
-  There are a number of ``"geojson"`` ``"properties"`` fields that are common
+  The geojson ``"properties"`` field will vary dependent on the 'type' of object. These
+  will be documented for each individual object type.
+  There are a number of geojson ``"properties"`` fields that are common
   enough to be discussed now.
 
     ``"altitudes"``
@@ -432,33 +436,186 @@ mentioned below are only FIS-B related.
   start and stop times, and the altitudes for the convention center speech
   might be different than the airport altitudes.
   
-  An example of the 'geojson' field and the others described above is: ::
+  An example of the ``"geojson"`` field
+  (with multiple geometries) and the others described above is: ::
 
     {
-      "type": "METAR",
-      "unique_name": "K4M9",
-      "observation_time": "2021-06-24T02:35:00Z",
-      "contents": "METAR K4M9 240235Z AUTO 00000KT 10SM CLR 24/24
-                   A3004 RMK AO2 PWINO=",
-      "expiration_time": "2021-06-24T04:35:00Z",
+      "type": "NOTAM",
+      "subtype": "TFR",
+      "unique_name": "1-3325"
+      "number": "1/3325",
+      "contents": "NOTAM-TFR 1/3325 081500Z OH..AIRSPACE VANDALIA, OH..
+                   TEMPORARY FLIGHT RESTRICTION. PURSUANT TO 14 CFR SECTION
+                   91.145, MANAGEMENT OF ACFT OPS IN THE VICINITY OF AERIAL
+                   DEMONSTRATIONS AND MAJOR SPORTING EVENTS, ACFT OPS ARE
+                   PROHIBITED WI AN AREA DEFINED AS 5NM RADIUS OF
+                   395428N0841316W (DQN130010.4) SFC-16000FT EFFECTIVE:
+                   2107081500 UTC UNTIL 2107082030 UTC, 2107091400 UTC UNTIL
+                   2107092100 UTC, 2107101600 UTC UNTIL 2107102100 UTC, AND
+                   2107111600 UTC UNTIL 2107112100 UTC. DUE TO USAF
+                   THUNDERBIRDS AND HIGH SPEED AERIAL DEMONSTRATIONS AT THE
+                   CENTERPOINT ENERGY DAYTON AIRSHOW. UNLESS AUTH BY
+                   ATC-DAYTON TOWER 119.9. JIM TUCCIARONE, TEL 216-390-8410,
+                   IS THE POINT OF CONTACT. THE DAYTON /DAY/ ATCT, TEL
+                   937-415-6750, FREQ 119.9 IS THE CDN FAC.
+                   2107081500-2107112100",
+      "start_of_activity_time": "2021-07-08T15:00:00Z",
+      "end_of_validity_time": "2021-07-11T21:00:00Z",
+      "expiration_time": "2021-07-11T21:00:00Z",
       "geojson": {
           "features": [
               {
                   "geometry": {
-                      "coordinates": [-90.648, 36.404],
-                      "type": "Point"
+                      "coordinates": [
+                          [-84.219818, 39.991235], [-84.198666, 39.989631],
+                          [-84.178329, 39.984879], [-84.159593, 39.977165],
+                          [-84.143177, 39.966783], [-84.129715, 39.954136],
+                          [-84.119722, 39.93970],  [-84.11358, 39.924059],
+                          [-84.111525, 39.907786], [-84.113631, 39.891518],
+                          [-84.119814, 39.875878], [-84.129836, 39.861468],
+                          [-84.143309, 39.84884],  [-84.159714, 39.838477],
+                          [-84.178422, 39.830779], [-84.198716, 39.826038],
+                          [-84.219818, 39.824438], [-84.24092,  39.826038],
+                          [-84.261214, 39.830779], [-84.279922, 39.838477],
+                          [-84.296327, 39.84884],  [-84.3098, 39.861468],
+                          [-84.319822, 39.875878], [-84.326005, 39.891518],
+                          [-84.328111, 39.907786], [-84.326056, 39.924059],
+                          [-84.319914, 39.939709], [-84.309921, 39.954136],
+                          [-84.296459, 39.966783], [-84.280043, 39.977165],
+                          [-84.261307, 39.984879], [-84.24097, 39.989631]
+                      ],
+                      "type": "Polygon"
                   },
                   "properties": {
+                      "altitudes": [
+                          16000,
+                          "MSL",
+                          0,
+                          "MSL"
+                      ],
+                      "element": "TFR",
+                      "id": "1-3325",
+                      "start_time": "2021-07-08T15:00:00Z",
+                      "stop_time": "2021-07-08T20:30:00Z"
+                  },
+                  "type": "Feature"
+              },
+              {
+                  "geometry": {
+                      "coordinates": [
+                          [-84.219818, 39.991235], [-84.198666, 39.989631],
+                          [-84.178329, 39.984879], [-84.159593, 39.977165],
+                          [-84.143177, 39.966783], [-84.129715, 39.954136],
+                          [-84.119722, 39.93970],  [-84.11358, 39.924059],
+                          [-84.111525, 39.907786], [-84.113631, 39.891518],
+                          [-84.119814, 39.875878], [-84.129836, 39.861468],
+                          [-84.143309, 39.84884],  [-84.159714, 39.838477],
+                          [-84.178422, 39.830779], [-84.198716, 39.826038],
+                          [-84.219818, 39.824438], [-84.24092,  39.826038],
+                          [-84.261214, 39.830779], [-84.279922, 39.838477],
+                          [-84.296327, 39.84884],  [-84.3098, 39.861468],
+                          [-84.319822, 39.875878], [-84.326005, 39.891518],
+                          [-84.328111, 39.907786], [-84.326056, 39.924059],
+                          [-84.319914, 39.939709], [-84.309921, 39.954136],
+                          [-84.296459, 39.966783], [-84.280043, 39.977165],
+                          [-84.261307, 39.984879], [-84.24097, 39.989631]
+                      ],
+                      "type": "Polygon"
+                  },
+                  "properties": {
+                      "altitudes": [
+                          16000,
+                          "MSL",
+                          0,
+                          "MSL"
+                      ],
+                      "element": "TFR",
+                      "id": "1-3325",
+                      "start_time": "2021-07-09T14:00:00Z",
+                      "stop_time": "2021-07-09T21:00:00Z"
+                  },
+                  "type": "Feature"
+              },
+              {
+                  "geometry": {
+                      "coordinates": [
+                          [-84.219818, 39.991235], [-84.198666, 39.989631],
+                          [-84.178329, 39.984879], [-84.159593, 39.977165],
+                          [-84.143177, 39.966783], [-84.129715, 39.954136],
+                          [-84.119722, 39.93970],  [-84.11358, 39.924059],
+                          [-84.111525, 39.907786], [-84.113631, 39.891518],
+                          [-84.119814, 39.875878], [-84.129836, 39.861468],
+                          [-84.143309, 39.84884],  [-84.159714, 39.838477],
+                          [-84.178422, 39.830779], [-84.198716, 39.826038],
+                          [-84.219818, 39.824438], [-84.24092,  39.826038],
+                          [-84.261214, 39.830779], [-84.279922, 39.838477],
+                          [-84.296327, 39.84884],  [-84.3098, 39.861468],
+                          [-84.319822, 39.875878], [-84.326005, 39.891518],
+                          [-84.328111, 39.907786], [-84.326056, 39.924059],
+                          [-84.319914, 39.939709], [-84.309921, 39.954136],
+                          [-84.296459, 39.966783], [-84.280043, 39.977165],
+                          [-84.261307, 39.984879], [-84.24097, 39.989631]
+                      ],
+                      "type": "Polygon"
+                  },
+                  "properties": {
+                      "altitudes": [
+                          16000,
+                          "MSL",
+                          0,
+                          "MSL"
+                      ],
+                      "element": "TFR",
+                      "id": "1-3325",
+                      "start_time": "2021-07-10T16:00:00Z",
+                      "stop_time": "2021-07-10T21:00:00Z"
+                  },
+                  "type": "Feature"
+              },
+              {
+                  "geometry": {
+                      "coordinates": [
+                          [-84.219818, 39.991235], [-84.198666, 39.989631],
+                          [-84.178329, 39.984879], [-84.159593, 39.977165],
+                          [-84.143177, 39.966783], [-84.129715, 39.954136],
+                          [-84.119722, 39.93970],  [-84.11358, 39.924059],
+                          [-84.111525, 39.907786], [-84.113631, 39.891518],
+                          [-84.119814, 39.875878], [-84.129836, 39.861468],
+                          [-84.143309, 39.84884],  [-84.159714, 39.838477],
+                          [-84.178422, 39.830779], [-84.198716, 39.826038],
+                          [-84.219818, 39.824438], [-84.24092,  39.826038],
+                          [-84.261214, 39.830779], [-84.279922, 39.838477],
+                          [-84.296327, 39.84884],  [-84.3098, 39.861468],
+                          [-84.319822, 39.875878], [-84.326005, 39.891518],
+                          [-84.328111, 39.907786], [-84.326056, 39.924059],
+                          [-84.319914, 39.939709], [-84.309921, 39.954136],
+                          [-84.296459, 39.966783], [-84.280043, 39.977165],
+                          [-84.261307, 39.984879], [-84.24097, 39.989631]
+                      ],
+                      "type": "Polygon"
+                  },
+                  "properties": {
+                      "altitudes": [
+                          16000,
+                          "MSL",
+                          0,
+                          "MSL"
+                      ],
+                      "element": "TFR",
+                      "id": "1-3325",
+                      "start_time": "2021-07-11T16:00:00Z",
+                      "stop_time": "2021-07-11T21:00:00Z"
                   },
                   "type": "Feature"
               }
           ],
           "type": "FeatureCollection"
-      }
+      },
     }
 
 ``"cancel"``
-  This field **only** applies to TWGO objects. This includes 'type' field values of:
+  This field **only** applies to TWGO (Text With Graphic Overlay) objects.
+  This includes 'type' field values of:
 
   * ``NOTAM`` (all subtypes)
   * ``FIS_B_UNAVAILABLE`` (FIS-B Product Unavailable)
@@ -472,16 +629,16 @@ mentioned below are only FIS-B related.
   In practice, I have only seen messages cancelled for
   NOTAMS, G-AIRMETS, and CWAs. But the standard states all TWGO messages are fair game.
 
-  The value of the 'cancel' field is just the
-  'unique_name' field. You should immediately delete the message of the
+  The value of the ``"cancel"`` field is just the
+  ``"unique_name"`` field. You should immediately delete the message of the
   specified 'type' and 'unique_name' from your database.
 
-  **Whenever you get one of the TWGO 'type' fields, the first thing you should do is to check
-  the object for a 'cancel' field.** If you find one, cancel the message (which might
+  **Whenever you get one of the TWGO** ``"type"`` **fields, the first thing you should do is to check
+  the object for a** ``"cancel"`` **field.** If you find one, cancel the message (which might
   not even exist in your records), and do no further processing on the message. All
   the other fields are not important.
 
-  Here are a couple of examples of messages with the 'cancel' field present. A
+  Here are a couple of examples of messages with the ``"cancel"`` field present. A
   G-AIRMET cancellation: ::
 
     {
@@ -500,8 +657,8 @@ mentioned below are only FIS-B related.
         "expiration_time": "2021-06-21T17:23:18Z"
     }
 
-  Note that the NOTAM won't have a 'subtype' field. It isn't
-  needed. The 'unique_id' is sufficient and will work across 
+  Note that the NOTAM won't have a ``"subtype"`` field. It isn't
+  needed. The ``"unique_id"`` is sufficient and will work across 
   all NOTAM subtypes.
 
 ``"station"``
@@ -511,7 +668,8 @@ mentioned below are only FIS-B related.
   field is the latitude and longitude combined with a tilde
   character such as ``'40.0383~-86.255593'``. One advantage of
   this scheme is that the standard in some cases requires you
-  to show the latitude and longitude of all ground stations, and 
+  to show the latitude and longitude of all ground stations
+  being received, and 
   you can un-parse the ground station id to get this information.
 
 REST API and Message Descriptions
@@ -826,7 +984,7 @@ SIGMET/WST, AIRMET, CWA
   (M) /cwa
 
 Provides all available SIGMET/WSTs, AIRMETs, and
-CWAs (Center Weather Advisory). From a returned object perspective,
+CWAs (Center Weather Advisories). From a returned object perspective,
 they are all identical except for their subject matter. SIGMET
 includes WSTs (Convective SIGMETs).
 
@@ -882,22 +1040,14 @@ Example: ::
             {
                 "geometry": {
                     "coordinates": [
-                        [-69.494019, 47.707443],
-                        [-71.575241, 43.219528],
-                        [-73.22525, 38.574371],
-                        [-77.313538, 34.541016],
-                        [-83.431549, 29.597855],
-                        [-87.830887, 28.326874],
-                        [-87.454605, 30.823517],
-                        [-84.979935, 31.063843],
-                        [-85.152969, 34.961243],
-                        [-82.128983, 36.436844],
-                        [-82.025986, 38.753586],
-                        [-84.70253, 39.015884],
-                        [-85.187988, 40.979004],
-                        [-82.235413, 42.900925],
-                        [-75.896301, 45.441513],
-                        [-71.690598, 45.43808],
+                        [-69.494019, 47.707443], [-71.575241, 43.219528],
+                        [-73.22525, 38.574371],  [-77.313538, 34.541016],
+                        [-83.431549, 29.597855], [-87.830887, 28.326874],
+                        [-87.454605, 30.823517], [-84.979935, 31.063843],
+                        [-85.152969, 34.961243], [-82.128983, 36.436844],
+                        [-82.025986, 38.753586], [-84.70253, 39.015884],
+                        [-85.187988, 40.979004], [-82.235413, 42.900925],
+                        [-75.896301, 45.441513], [-71.690598, 45.43808],
                         [-69.494019, 47.707443]
                       ],
                     "type": "Polygon"
@@ -975,12 +1125,9 @@ Example: ::
             {
                 "geometry": {
                     "coordinates": [
-                        [-84.529495, 46.609497],
-                        [-86.84967, 45.799942],
-                        [-87.399673, 44.399872],
-                        [-84.859772, 43.919907],
-                        [-82.389908, 45.259552],
-                        [-84.529495, 46.609497]
+                        [-84.529495, 46.609497], [-86.84967, 45.799942],
+                        [-87.399673, 44.399872], [-84.859772, 43.919907],
+                        [-82.389908, 45.259552], [-84.529495, 46.609497]
                     ],
                     "type": "Polygon"
                 },
@@ -1053,7 +1200,7 @@ NOTAM (in general)
   (M) /notam
   (M) /notam/<4 character id>
 
-Lists all NOTAMs of all types. If an id is specified, will find all
+Returns all NOTAMs of all types. If an id is specified, will find all
 NOTAMs associated with that id (i.e. the ``"location"`` field inside
 a NOTAM). Not all NOTAMs have a location.
 
@@ -1065,8 +1212,9 @@ NOTAM-TFRs in FIS-B are repackaged by the FIS-B creator and have differences
 with the other NOTAMs in terms of format.
 
 I further divide NOTAM-Ds into two types: regular NOTAM-Ds and NOTAM-D-SUAs.
-The NOTAM-D-SUAs are different, because they have an optional geojson field
-that is not produced by FIS-B, but loaded as an auxillary file. They also
+The NOTAM-D-SUAs are different, because they can have an optional geojson field
+that is not produced by FIS-B, but loaded as an auxillary file
+(if configured by 'fisb-decode'). They also
 have some unique characteristics which must be considered.
 
 Fields common to all NOTAMs:
@@ -1085,6 +1233,20 @@ Fields common to all NOTAMs:
   This is the 'official' number of the NOTAM. It is what
   should be shown to users. Do not use the ``"unique_name"``.
 
+``"start_of_activity_time"``
+  Directly parsed from the NOTAM. The FIS-B standard doesn't use this
+  time. It will instead use the ``"start_time"`` field in the object,
+  but this applies only to objects with a graphics portion. 'fisb-decode'
+  can use the parsed time directly, but it depends on the configuration.
+  Please see the fisb-decode documentation.
+
+``"end_of_validity_time"``
+  Directly parsed from the NOTAM. The FIS-B standard doesn't use this
+  time. It will instead use the ``"stop_time"`` field in the object,
+  but this applies only to objects with a graphics portion. 'fisb-decode'
+  can use the parsed time directly, but it depends on the configuration.
+  Please see the fisb-decode documentation.
+
 Notes:
 
 * ``"cancel"``: Present only when cancelled. Always check for this first
@@ -1099,7 +1261,7 @@ NOTAM-TFR
   (M) /notam-tfr
 
 NOTAM-TFRs may or may not be associated with a geojson object. If they
-are, the object may have multiple components.
+are, the object may have multiple geometries.
 
 NOTAM-TFRs are truncated after a certain number of characters and will end with
 the text ``'(INCMPL)'``.
@@ -1308,7 +1470,8 @@ Fields unique to NOTAM-D SUA:
   be used. See the caution about this under the ``"altitudes"`` item
   below.
 
-``"altitudes"``: This is in the exact same form as the altitudes
+``"altitudes"``
+  This is in the exact same form as the altitudes
   field for other objects, but it isn't quite the same. The first
   item is the high altitude, followed by the high altitude type, then
   the low altitude and low altitude type (just like all the other
@@ -1324,7 +1487,7 @@ Fields unique to NOTAM-D SUA:
   Also, it is not always clear what altitudes are AGL or MSL. Flight levels are 
   considered MSL, ``SFC`` is considered AGL, but the usual reference is just
   feet (``'FT'``). If we can't determine AGL or MSL, we are forced to use what
-  they tell use, and that is ``'FT'``.
+  they tell us, and that is ``'FT'``.
 
 Example: ::
 
@@ -1355,10 +1518,8 @@ Example: ::
             {
                 "geometry": {
                     "coordinates": [
-                        [-92.151396, 37.68334],
-                        [-92.181396, 37.68334],
-                        [-92.203062, 37.717229],
-                        [-92.146118, 37.719451],
+                        [-92.151396, 37.68334],  [-92.181396, 37.68334],
+                        [-92.203062, 37.717229], [-92.146118, 37.719451],
                         [-92.151396, 37.68334]
                     ],
                     "type": "Polygon"
@@ -1385,7 +1546,7 @@ Notes:
 * If the NOTAM-D SUA has a geojson field, the ``"properties"`` field will contain
   the following fields which are taken from the source data file:
 
-  * ``"name"``: Name of the SUA. Note that the FAA in the NOTAM will taken
+  * ``"name"``: Name of the SUA. Note that the FAA in the NOTAM will take
     out dashes. This name will contain them. This is probably the better
     display name for users.
   * ``"remarks"``: Remarks taken directly from the data file.
@@ -1439,10 +1600,8 @@ Example: ::
             {
                 "geometry": {
                     "coordinates": [
-                        [-84.246597, 41.191864],
-                        [-84.37294,  40.870514],
-                        [-83.937607, 40.810776],
-                        [-83.823624, 41.176758],
+                        [-84.246597, 41.191864], [-84.37294,  40.870514],
+                        [-83.937607, 40.810776], [-83.823624, 41.176758],
                         [-84.246597, 41.191864]
                     ],
                     "type": "Polygon"
@@ -1524,10 +1683,8 @@ Fields:
   * WINDS AND TEMPERATURE ALOFT
 
 ``"centers"``
-  Locations affected by the outage (don't ask why the
-  above centers in the example, or the average C-172 CONUS
-  pilot, needs to know about Guam NEXRAD).
-
+  Locations affected by the outage.
+    
 Example: ::
 
   {
@@ -1670,7 +1827,9 @@ Fields with particular meaning for images:
   NEXRAD CONUS is sent every 15 minutes, so it doesn't apply.
   Lighting is sent every 5 minutes, so a single image can have data
   from 2 images. NEXRAD regional can have data from 5 images since
-  it is sent every 2 minutes.
+  it is sent every 2 minutes. This is why, in poor reception conditions,
+  the NEXRAD regional data will appear perfect, the lightning image will
+  have an error or two, and the NEXRAD CONUS image will be a total mess.
 
 ``"urls"``
   This is an dictionary whose key is the name
@@ -1752,7 +1911,7 @@ CRLs have the concept of 'completeness'. If you have a copy of
 each message in the CRL, that CRL is said to be 'complete'. If
 the CRL doesn't show any messages for that type, the CRL is also
 considered complete. If there is no CRL for a particular type,
-that CRL is considered 'incomplete' (). If a particular CRL type
+that CRL is considered 'incomplete'. If a particular CRL type
 has messages with both a text and a graphics portion, both must
 be present in order to be considered complete.
 
@@ -1898,12 +2057,12 @@ There is only one (or zero) RSR messages available at
 any given time. Each message contains a list of all
 stations being received and their RSR value.
 
-The 'stations' field is unique to RSR:
+The ``"stations"`` field is unique to RSR:
 
 ``"stations"``
   Dictionary whose keys are the names of ground stations 
   being received in the usual ``"station"`` field format.
-  The values are the percentage of possible packets being
+  The value is the percentage of possible packets being
   received. In the example below, 91% of messages from
   ground station ``"40.0383~-86.255593"`` are being received.
 

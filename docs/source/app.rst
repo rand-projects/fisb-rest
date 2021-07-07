@@ -1,7 +1,6 @@
 FIS-B REST Package
 ==================
 
-Fis-b rest package
 
 app module
 ----------

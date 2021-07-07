@@ -44,13 +44,13 @@ def isoStringToDt(isoStr):
         isoStr (str): ISO 8601 string (assumed UTC).
 
     Returns:
-        object: Datetime object containing representation
-            of supplied ISO 8601 string.
+        obj: Datetime object containing representation
+        of supplied ISO 8601 string.
     """
     return dateutil.parser.parse(isoStr)
 
 def dtToIsoString(dt):
-    """Change datetime to iso format string ending in Z.
+    """Change datetime to an ISO-8601 format string ending in Z.
 
     The standard conversion to an ISO string in UTC appends
     ``+00:00``. We convert the data and then change that to ``Z``.
@@ -66,12 +66,12 @@ def dtToIsoString(dt):
 def convertMsgDtToIsoString(msgDict):
     """Change any '<xxx>_time' entries to ISO string values.
                                                                                                  
-    Messages are stored in the database as ``datetime`` objects. For printing
-    to files, we convert these back to ISO string values. This
-    function takes a message and converts all the slots that end in '_time' into an
-    ISO string. These slots are only at the first level, no nesting is performed.
-    It will also convert ``start_time`` and ``stop_time`` slots that occur                       
-    inside a ``geojson`` slot.                                                               
+    Messages are stored in the database as Datetime objects. For JSON,
+    we convert these back to ISO string values. This
+    function takes a message and converts all the fields that end in '_time' into an
+    ISO string. These fields are only at the top level, no nesting is performed.
+    It will also convert ``"start_time"`` and ``"stop_time"`` fields that occur
+    inside a ``"geojson"`` field.                                                               
                                                                                                  
     Args:                                                                                        
         msgDict (dict): Dictionary containing message.
@@ -265,7 +265,7 @@ def getStandardQueryItems(request):
 
 def addCrlCompleteField(msg):
     """For CRL messages, will check to see if all messages are complete
-    and will add the field ``'complete'`` with a value of ``1`` if
+    and will add the field ``"complete"`` with a value of ``1`` if
     true. If all the messages are not complete, will not alter the message.
 
     Args:
@@ -295,7 +295,7 @@ def augmentRsr(msg):
     The RSR message that comes from 'fisb-decode' contains a 
     3 element list containing the total number of messages 
     received over an interval, the number of messages per second
-    send by that station, and the percentage of possible messages
+    sent by that station, and the percentage of possible messages
     received (to the nearest percent). 
 
     This return alters the message to only return the percentage
@@ -320,12 +320,12 @@ def changeStandardFields(msg):
       from Datetime objects.
     * Remove ``_digest`` and ``_id`` fields from messages.
     * Remove ``station`` field from messages that have an 
-      associated CRL (needed internally by harvest to keep
+      associated CRL (needed internally by Harvest to keep
       track of completeness on a per station basis).
     * Alter any CRL message to check for completeness.
-    * CRL messages get their 'type' field changed from product
+    * CRL messages get their ``"type"`` field changed from product
       id to a more meaningful (but longer) name.
-    * Alter RSR message to return only percentage received.
+    * Alter RSR message to return only the percentage received.
 
     Args:
         msg (object): Message to be checked.
@@ -379,8 +379,8 @@ def checkIfInPolygon(msg, lat, lon):
         lon (float): Longitude.
 
     Returns:
-        bool: ``True`` if the message has a polygon and
-        the specified point is within that polygon.
+        bool: ``True`` if the message has one or more polygons and
+        the specified point is within one of those polygons.
         Will also return ``True`` if the message
         doesn't have a polygon. Will only return
         ``False`` if the message has a polygon and
@@ -409,7 +409,7 @@ def checkIfInPolygon(msg, lat, lon):
     return False
 
 def checkIfInAltBounds(msg, high, low):
-    """If the message has geometry and an ``altitudes`` field
+    """If the message has geometry and an ``"altitudes"`` field
     (not including NOTAM-D SUA messages), return ``True`` if
     the altitude range is within the high and low values.
 
@@ -423,15 +423,15 @@ def checkIfInAltBounds(msg, high, low):
 
     Returns:
         bool: ``True`` if the message has a geometry
-        and an ``altitudes`` field, and there is an 
+        and an ``"altitudes"`` field, and there is an 
         match between the high and low parameters and
         the altitudes range.
         Will also return ``True`` if the message
         doesn't have any geometry. Will only return
         ``False`` if the message has a geometry and
-        ``altitudes`` fields  and the high and low 
+        ``"altitudes"`` fields  and the high and low 
         parameters are not in the range of the
-        ``altitudes`` field.
+        ``"altitudes"`` field.
         If a message has multiple geometries, all are
         checked. Only one needs to satisfy the 
         requirements.
@@ -471,8 +471,8 @@ def returnStaticOne(findArg1, request):
         request (obj): Request object from Flask.
 
     Returns:
-        obj: Message containing zero to one object in the
-            ``result`` field.
+        obj: Message containing zero or a single object in the
+        ``"result"`` field.
     """
     result = {}
     
@@ -520,7 +520,7 @@ def returnStaticMany(findArg1, request):
 
     Returns:
         obj: Message containing zero to many objects in the
-            ``results`` field.
+        ``"results"`` field.
     """
     result = {}
 
@@ -571,7 +571,7 @@ def returnOne(findArg1, request):
 
     Returns:
         obj: Message containing at most one internal object in the
-            ``result`` field.
+        ``"result"`` field.
     """
     result = {}
     
@@ -622,7 +622,7 @@ def returnMany(findArg1, request):
 
     Returns:
         obj: Message containing at most one internal object in the
-            ``results`` field.
+        ``"results"`` field.
     """
     result = {}
 
