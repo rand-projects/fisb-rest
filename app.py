@@ -422,30 +422,9 @@ def cancel():
     return util.returnMany({'type': {'$in': ['AIRMET', 'SIGMET', 'CWA', \
         'G_AIRMET', 'NOTAM']}, 'cancel': {'$exists': True}}, request)
 
-@app.route("/crl-8")
-def crl_8():
-    """Sends all CRL-8 objects (same as CRL-NOTAM-TFR).
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnMany({'type': 'CRL_8'}, request)
-
-@app.route("/crl-8/<id>")
-def crl_8_id(id):
-    """Send CRL-8 object for a particular station (same as CRL-NOTAM-TFR).
-
-    Args:
-        id (str): Station name to retreive.
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnOne({'type': 'CRL_8', 'station': id}, request)
-
 @app.route("/crl-notam-tfr")
 def crl_notam_tfr():
-    """Sends all CRL-NOTAM-TFRs (same as CRL-8).
+    """Sends all CRL-NOTAM-TFRs (CRL-8).
 
     Returns:
         str: JSON response.
@@ -454,7 +433,7 @@ def crl_notam_tfr():
 
 @app.route("/crl-notam-tfr/<id>")
 def crl_notam_tfr_id(id):
-    """Send CRL-NOTAM-TFR object for a particular station (same as CRL-8).
+    """Send CRL-NOTAM-TFR object for a particular station (CRL-8).
 
     Args:
         id (str): Station name to retreive.
@@ -464,30 +443,9 @@ def crl_notam_tfr_id(id):
     """
     return util.returnOne({'type': 'CRL_8', 'station': id}, request)
 
-@app.route("/crl-11")
-def crl_11():
-    """Sends all CRL-11 objects (same as CRL-AIRMET).
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnMany({'type': 'CRL_11'}, request)
-
-@app.route("/crl-11/<id>")
-def crl_11_id(id):
-    """Send CRL-11 object for a particular station (same as CRL-AIRMET).
-
-    Args:
-        id (str): Station name to retreive.
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnOne({'type': 'CRL_11', 'station': id}, request)
-
 @app.route("/crl-airmet")
 def crl_airmet():
-    """Sends all CRL-AIRMET objects (same as CRL-11).
+    """Sends all CRL-AIRMET objects (CRL-11).
 
     Returns:
         str: JSON response.
@@ -496,7 +454,7 @@ def crl_airmet():
 
 @app.route("/crl-airmet/<id>")
 def crl_airmet_id(id):
-    """Send CRL-AIRMET object for a particular station (same as CRL-11).
+    """Send CRL-AIRMET object for a particular station (CRL-11).
 
     Args:
         id (str): Station name to retreive.
@@ -506,30 +464,9 @@ def crl_airmet_id(id):
     """
     return util.returnOne({'type': 'CRL_11', 'station': id}, request)
 
-@app.route("/crl-12")
-def crl_12():
-    """Sends all CRL-12 objects (same as CRL-SIGMET).
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnMany({'type': 'CRL_12'}, request)
-
-@app.route("/crl-12/<id>")
-def crl_12_id(id):
-    """Send CRL-12 object for a particular station (same as CRL-SIGMET).
-
-    Args:
-        id (str): Station name to retreive.
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnOne({'type': 'CRL_12', 'station': id}, request)
-
 @app.route("/crl-sigmet")
 def crl_sigmet():
-    """Sends all CRL-SIGMET objects (same as CRL-12).
+    """Sends all CRL-SIGMET objects (CRL-12).
 
     Returns:
         str: JSON response.
@@ -538,7 +475,7 @@ def crl_sigmet():
 
 @app.route("/crl-sigmet/<id>")
 def crl_sigmet_id(id):
-    """Send CRL-SIGMET object for a particular station (same as CRL-12).
+    """Send CRL-SIGMET object for a particular station (CRL-12).
 
     Args:
         id (str): Station name to retreive.
@@ -548,30 +485,9 @@ def crl_sigmet_id(id):
     """
     return util.returnOne({'type': 'CRL_12', 'station': id}, request)
 
-@app.route("/crl-14")
-def crl_14():
-    """Sends all CRL-14 objects (same as CRL-G-AIRMET).
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnMany({'type': 'CRL_14'}, request)
-
-@app.route("/crl-14/<id>")
-def crl_14_id(id):
-    """Send CRL-14 object for a particular station (same as CRL-G-AIRMET).
-
-    Args:
-        id (str): Station name to retreive.
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnOne({'type': 'CRL_14', 'station': id}, request)
-
 @app.route("/crl-g-airmet")
 def crl_g_airmet():
-    """Sends all CRL-G-AIRMET objects (same as CRL-14).
+    """Sends all CRL-G-AIRMET objects (CRL-14).
 
     Returns:
         str: JSON response.
@@ -580,7 +496,7 @@ def crl_g_airmet():
 
 @app.route("/crl-g-airmet/<id>")
 def crl_g_airmet_id(id):
-    """Send CRL-G-AIRMET object for a particular station (same as CRL-14).
+    """Send CRL-G-AIRMET object for a particular station (CRL-14).
 
     Args:
         id (str): Station name to retreive.
@@ -590,30 +506,9 @@ def crl_g_airmet_id(id):
     """
     return util.returnOne({'type': 'CRL_14', 'station': id}, request)
 
-@app.route("/crl-15")
-def crl_15():
-    """Sends all CRL-15 objects (same as CRL-CWA).
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnMany({'type': 'CRL_15'}, request)
-
-@app.route("/crl-15/<id>")
-def crl_15_id(id):
-    """Send CRL-15 object for a particular station (same as CRL-CWA).
-
-    Args:
-        id (str): Station name to retreive.
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnOne({'type': 'CRL_15', 'station': id}, request)
-
 @app.route("/crl-cwa")
 def crl_cwa():
-    """Sends all CRL-CWA objects (same as CRL-15).
+    """Sends all CRL-CWA objects (CRL-15).
 
     Returns:
         str: JSON response.
@@ -622,7 +517,7 @@ def crl_cwa():
 
 @app.route("/crl-cwa/<id>")
 def crl_cwa_id(id):
-    """Send CRL-CWA object for a particular station (same as CRL-15).
+    """Send CRL-CWA object for a particular station (CRL-15).
 
     Args:
         id (str): Station name to retreive.
@@ -632,30 +527,9 @@ def crl_cwa_id(id):
     """
     return util.returnOne({'type': 'CRL_15', 'station': id}, request)
 
-@app.route("/crl-16")
-def crl_16():
-    """Sends all CRL-16 objects (same as CRL-NOTAM_TRA).
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnMany({'type': 'CRL_16'}, request)
-
-@app.route("/crl-16/<id>")
-def crl_16_id(id):
-    """Send CRL-16 object for a particular station (same as CRL-NOTAM-TRA).
-
-    Args:
-        id (str): Station name to retreive.
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnOne({'type': 'CRL_16', 'station': id}, request)
-
 @app.route("/crl-notam-tra")
 def crl_notam_tra():
-    """Sends all CRL-NOTAM-TRA objects (same as CRL-16).
+    """Sends all CRL-NOTAM-TRA objects (CRL-16).
 
     Returns:
         str: JSON response.
@@ -664,7 +538,7 @@ def crl_notam_tra():
 
 @app.route("/crl-notam-tra/<id>")
 def crl_notam_tra_id(id):
-    """Send CRL-NOTAM-TRA object for a particular station (same as CRL-16).
+    """Send CRL-NOTAM-TRA object for a particular station (CRL-16).
 
     Args:
         id (str): Station name to retreive.
@@ -674,30 +548,9 @@ def crl_notam_tra_id(id):
     """
     return util.returnOne({'type': 'CRL_16', 'station': id}, request)
 
-@app.route("/crl-17")
-def crl_17():
-    """Sends all CRL-17 objects (same as CRL-NOTAM-TMOA).
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnMany({'type': 'CRL_17'}, request)
-
-@app.route("/crl-17/<id>")
-def crl_17_id(id):
-    """Send CRL-17 object for a particular station (same as CRL-NOTAM-TMOA).
-
-    Args:
-        id (str): Station name to retreive.
-
-    Returns:
-        str: JSON response.
-    """
-    return util.returnOne({'type': 'CRL_17', 'station': id}, request)
-
 @app.route("/crl-notam-tmoa")
 def crl_notam_tmoa():
-    """Sends all CRL-NOTAM-TMOA objects (same as CRL-17).
+    """Sends all CRL-NOTAM-TMOA objects (CRL-17).
 
     Returns:
         str: JSON response.
@@ -706,7 +559,7 @@ def crl_notam_tmoa():
 
 @app.route("/crl-notam-tmoa/<id>")
 def crl_notam_tmoa_id(id):
-    """Send CRL-NOTAM-TMOA object for a particular station (same as CRL-17).
+    """Send CRL-NOTAM-TMOA object for a particular station (CRL-17).
 
     Args:
         id (str): Station name to retreive.

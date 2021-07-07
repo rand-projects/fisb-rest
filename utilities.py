@@ -12,6 +12,15 @@ import dateutil.parser
 DEFAULT_LIMIT = 10000
 DEFAULT_AFTER = "2004-01-01T00:00:00Z"
 
+# Map fisb-decode CRL names to FIS-B Rest names
+CRL_MAP = { 'CRL_8':  'CRL_NOTAM_TFR', \
+            'CRL_11': 'CRL_AIRMET', \
+            'CRL_12': 'CRL_SIGMET', \
+            'CRL_14': 'CRL_G_AIRMET', \
+            'CRL_15': 'CRL_CWA', \
+            'CRL_16': 'CRL_NOTAM_TRA', \
+            'CRL_17': 'CRL_NOTAM_TMOA'}
+
 # Handle to fisb database. Access elsewhere as util.dbConn
 dbConn = None
 
@@ -314,6 +323,8 @@ def changeStandardFields(msg):
       associated CRL (needed internally by harvest to keep
       track of completeness on a per station basis).
     * Alter any CRL message to check for completeness.
+    * CRL messages get their 'type' field changed from product
+      id to a more meaningful (but longer) name.
     * Alter RSR message to return only percentage received.
 
     Args:
@@ -337,6 +348,9 @@ def changeStandardFields(msg):
     if msgType.startswith('CRL'):
         addCrlCompleteField(msg)
         del msg['product_id']
+
+        # Change 'type'
+        msg['type'] = CRL_MAP[msgType]
 
     # RSR message will get the station value turned into percentage only.
     if msgType == 'RSR':

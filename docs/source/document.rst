@@ -1723,38 +1723,25 @@ Current Report List (CRL)
 
 ::
 
-  (M) /crl-8              (or /crl-notam-tfr)
-  (1) /crl-8/<station>
-  (M) /crl-11             (or /crl-airmet)
-  (1) /crl-11/<station>
-  (M) /crl-12             (or /crl-sigmet)
-  (1) /crl-12/<station>
-  (M) /crl-14             (or /crl-g-airmet)
-  (1) /crl-14/<station>
-  (M) /crl-15             (or /crl-cwa)
-  (1) /crl-15/<station>
-  (M) /crl-16             (or /crl-notam-tra)
-  (1) /crl-16/<station>
-  (M) /crl-17             (or /crl-notam-tmoa)
-  (1) /crl-17/<station>
+  (M) /crl-notam-tfr
+  (1) /crl-notam-tfr/<station>
+  (M) /crl-airmet
+  (1) /crl-airmet/<station>
+  (M) /crl-sigmet
+  (1) /crl-sigmet/<station>
+  (M) /crl-g-airmet
+  (1) /crl-g-airmet/<station>
+  (M) /crl-cwa
+  (1) /crl-cwa/<station>
+  (M) /crl-notam-tra
+  (1) /crl-notam-tra/<station>
+  (M) /crl-notam-tmoa
+  (1) /crl-notam-tmoa/<station>
 
 Current Report Lists contain the reports sent by a particular
 ground station for a certain subset of messages.
 If you wish to get a CRL only for a particular '<station>', you
 may do so. See the example for the form of a '<station>'.
-
-The number after CRL
-denotes the FIS-B product id.
-You can either refer to the CRL by the FIS-B product id, or use an
-alias. The product ids and aliases are:
-
-* 8: NOTAM-TFR [*alias: '/crl-notam-tfr'*]
-* 11: AIRMET [*alias: '/crl-airmet'*]
-* 12: SIGMET and WST (Convective SIGMET) [*alias: '/crl-sigmet'*]
-* 14: G-AIRMET [*alias: '/crl-g-airmet'*]
-* 15: CWA [*alias: '/crl-cwa'*]
-* 16: NOTAM-TRA [*alias: '/crl-notam-tra'*]
-* 17: NOTAM-TMOA [*alias: '/crl-notam-tmoa'*]
 
 A CRL is tied to a specific ground station. Each ground station
 will have its own set of CRLs. If you are receiving three ground
@@ -1791,18 +1778,21 @@ Fields with importance to CRL objects:
 ``"product_type"``
   Type of product this applies to. Will have one of the following values:
 
-    * crl-8: ``NOTAM/TFR``
-    * crl-11: ``AIRMET``
-    * crl-12: ``SIGMET``
-    * crl-14: ``G-AIRMET``
-    * crl-15: ``CWA``
-    * crl-16: ``NOTAM/TRA``
-    * crl-17: ``NOTAM/TMOA``
+    * ``NOTAM/TFR``
+    * ``AIRMET``
+    * ``SIGMET``
+    * ``G-AIRMET``
+    * ``CWA``
+    * ``NOTAM/TRA``
+    * ``NOTAM/TMOA``
 
-  Each string contains the message types that it represents.
+  Each string contains the message ``"type"`` that it represents.
   SIGMET includes WSTs.
   If you need both a message type
   and a subtype, they will be separated by a forward slash (``'/'``).
+  For example, ``AIRMET`` refers to a message of type ``AIRMET``. 
+  ``NOTAM/TMOA`` refers to a message of ``"type"`` ``NOTAM``
+  with a ``"subtype"`` of ``TMOA``.
   Using this string and the 'unique_name' in the ``"reports"``
   field, you could lookup any message.
 
@@ -1825,18 +1815,20 @@ Fields with importance to CRL objects:
   the 'unique_name' of the product. After the forward slash will
   be ``'TG'`` (text and graphics) or ``'TO'`` (text only). If there
   is an asterisk (``'*'``) at the end of the string, this indicates
-  that the message has been received.
+  that the message has been received (in the case of ``'TG'`` items, it
+  implies both text *and* graphic parts have been received).
 
 Example: ::
 
   {
-    "type": "CRL_8",
+    "type": "CRL_NOTAM_TFR",
     "unique_name": "40.0383~-86.255593",
     "station": "40.0383~-86.255593",
     "complete": 0,
     "overflow": 0,
     "product_id": 8,
     "range_nm": 100,
+    "product_type": "NOTAM/TFR"
     "reports": [
         "0-5116/TO",
         "0-367/TO*",
