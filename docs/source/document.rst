@@ -1,6 +1,33 @@
 FIS-B Rest
 ==========
 
+What is FIS-B Rest?
+-------------------
+
+Getting things running
+----------------------
+
+::
+
+   pip3 install -r misc/requirements.txt
+
+Add ~/.local/bin to your PATH: ::
+
+  PATH=$PATH:~/.local/bin
+  export PATH
+
+::
+
+   pip3 install -r misc/requirements-sphinx.txt
+
+::
+
+   ln -s ~/fisb-decode/runtime/web-images static/png
+
+::
+
+   flask run
+   
 Static and Non-Static Requests
 ------------------------------
 
@@ -1457,7 +1484,7 @@ Another example: ::
 Notes:
 
 * ``"cancel"``: Present only when cancelled. Always check for this first
-  and delete the report. No other processing required. THis is specified
+  and delete the report. No other processing required. This is specified
   in the standard, but I have never seen one of these cancelled. They are
   left to expire.
 
