@@ -1,0 +1,19 @@
+# Script used by  fisb-rest.service
+#
+# YOU WILL NEED TO CHANGE THE PATHS BOTH IN
+# THIS FILE AND ../misc/fisb-rest.service
+# TO MATCH YOUR SYSTEM.
+#
+# You also need to change the configuration file
+# gunicorn.conf.py for the correct
+# setup.
+#
+
+# !CHANGE PATH!
+export PATH_TO_FISB=<path>
+
+export PYTHONPATH=$PATH_TO_FISB/fisb-rest
+
+cd $PATH_TO_FISB/fisb-rest
+
+./gunicorn 2>/dev/null 1>/dev/null
