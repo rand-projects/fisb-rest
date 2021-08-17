@@ -14,9 +14,9 @@ retrieves data from the database and returns JSON objects.
 `Flask <https://flask-restful.readthedocs.io/en/latest/>`_ is used
 as the web server.
 
-At this point, FIS-B Rest is very much in development, so we will
-not be doing all the usual production processes one would normally 
-do with Flask (at this time).
+For this tutorial we will be using Flask directly. When deployed
+by systemd (see the end of this document),
+`gunicorn <https://gunicorn.org>`_ will be used as the web server.
 
 Getting things running
 ----------------------
@@ -2261,3 +2261,49 @@ Example: ::
         "units": "EDR*100"
     }
   }
+
+Automation using systemd
+------------------------
+
+Once your system is properly configured, you can automate everything
+using ``systemd``. This will start-up fis-b rest at boot time.
+This assumes you are running a Linux system that uses
+systemd for scheduling system tasks.
+
+The most important thing is to make sure your fis-b rest
+is properly configured. The ``systemd`` scripts use ``gunicorn`` as the HTTP
+server (this was installed when you installed the
+requirements). In the ``fisb-rest`` directory is the ``gunicorn.conf.py`` configuration
+file. Alter as you see fit. The stock file will bind the  IP address to your current
+external IP address and port 7214. Two workers are configured. The rest of the file
+should not need any changes.
+
+Next, determine the non-root username you wish to run under, and the path to
+`fis-b rest` on your system. Then, from the ``bin`` directory, type: ::
+
+  ./systemd-create username path-to-fisb-rest
+
+If your account name is ``fred`` and the ``fisb-rest`` directory is located at
+``/home/fred/fisb-rest`` you would type: ::
+
+  ./systemd-create fred /home/fred/fisb-rest
+
+This will create the files ``fisb-rest_service`` in the top-level ``fisb-rest``
+directory and ``fisb-rest.service`` file in the ``fisb-rest/misc`` directory.
+
+To install ``fisb-rest`` as a service (this will also start the web-server
+immediately and at boot time),
+type (from the ``fisb-rest`` directory): ::
+
+  sudo cp ../misc/fisb-rest.service /etc/systemd/system
+  sudo systemctl enable --now fisb-rest.service
+  sudo systemctl status fisb-rest.service
+
+Check the ``status`` to make sure it is running.
+
+In general, if you wish to start, stop, or disable (make it not run at boot),
+the service, issue the following commands: ::
+
+  sudo systemctl start fisb-rest.service
+  sudo systemctl stop fisb-rest.service
+  sudo systemctl disable fisb-rest.service
