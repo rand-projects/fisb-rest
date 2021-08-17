@@ -2278,6 +2278,14 @@ file. Alter as you see fit. The stock file will bind the  IP address to your cur
 external IP address and port 7214. Two workers are configured. The rest of the file
 should not need any changes.
 
+Note: If you install ``gunicorn`` using the requirements file, it will install it
+in your home directory as ``/home/<username>/.local/bin/gunicorn``. When started
+as a service ``gunicorn`` must be available as a general command. It doesn't count if
+it's in your path via ``.bashrc`` or something similar. The best way is to make a
+symbolic link such as: ::
+
+  sudo ln -s /home/<username>/.local/bin/gunicorn /usr/local/bin/gunicorn
+
 Next, determine the non-root username you wish to run under, and the path to
 `fis-b rest` on your system. Then, from the ``bin`` directory, type: ::
 
@@ -2295,11 +2303,24 @@ To install ``fisb-rest`` as a service (this will also start the web-server
 immediately and at boot time),
 type (from the ``fisb-rest`` directory): ::
 
-  sudo cp ../misc/fisb-rest.service /etc/systemd/system
+  sudo cp misc/fisb-rest.service /etc/systemd/system
   sudo systemctl enable --now fisb-rest.service
   sudo systemctl status fisb-rest.service
 
-Check the ``status`` to make sure it is running.
+Check the ``status`` to make sure it is running. It should look similar to: ::
+
+  ● fisb-rest.service - FIS-B Rest Web service
+     Loaded: loaded (/etc/systemd/system/fisb-rest.service; enabled; vendor preset: enabled)
+     Active: active (running) since Tue 2021-08-17 11:53:14 UTC; 2s ago
+   Main PID: 31286 (bash)
+      Tasks: 10 (limit: 9448)
+     Memory: 97.5M
+     CGroup: /system.slice/fisb-rest.service
+             ├─31286 /bin/bash /home/mbarnes/fisb-rest/fisb-rest_service
+             ├─31287 /usr/bin/python3 /usr/local/bin/gunicorn
+             ├─31303 /usr/bin/python3 /usr/local/bin/gunicorn
+             └─31304 /usr/bin/python3 /usr/local/bin/gunicorn
+
 
 In general, if you wish to start, stop, or disable (make it not run at boot),
 the service, issue the following commands: ::

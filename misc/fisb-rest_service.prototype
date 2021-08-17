@@ -15,4 +15,4 @@ export PYTHONPATH=$PATH_TO_FISB
 
 cd $PATH_TO_FISB
 
-./gunicorn 2>/dev/null 1>/dev/null
+gunicorn 2>/dev/null 1>/dev/null
