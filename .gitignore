@@ -6,6 +6,8 @@
 __pycache__
 docs/source/_build/
 docs/build/
+fisb-rest_service
+misc/fisb-rest.service
 static/png
 *.ERR
 foo

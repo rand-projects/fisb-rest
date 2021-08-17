@@ -1,10 +1,7 @@
 # To install:
 #
-# CHANGE username to username to run under.
-# CHANGE path to correct path.
-#
-# Make changes as indicated below to fit your system.
-# Also make changes to ../fisb-rest_service.
+# USE ../systemd-create TO FILL IN THE CORRECT VALUES.
+# DO NOT MAKE CHANGES TO THIS FILE
 #
 # sudo cp fisb-rest.service /etc/systemd/system
 # sudo systemctl enable --now fisb-rest.service
@@ -20,11 +17,9 @@ Description=FIS-B Rest Web service
 [Service]
 Type=simple
 
-# !CHANGE!
 User=<username>
 
-# !CHANGE!
-ExecStart=/bin/bash <path>/fisb-rest/fisb-rest_service
+ExecStart=/bin/bash <path>/fisb-rest_service
 
 [Install]
 WantedBy=multi-user.target

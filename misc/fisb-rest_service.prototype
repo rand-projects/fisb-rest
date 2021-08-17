@@ -9,11 +9,10 @@
 # setup.
 #
 
-# !CHANGE PATH!
 export PATH_TO_FISB=<path>
 
-export PYTHONPATH=$PATH_TO_FISB/fisb-rest
+export PYTHONPATH=$PATH_TO_FISB
 
-cd $PATH_TO_FISB/fisb-rest
+cd $PATH_TO_FISB
 
 ./gunicorn 2>/dev/null 1>/dev/null
