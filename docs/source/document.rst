@@ -2278,16 +2278,17 @@ file. Alter as you see fit. The stock file will bind the  IP address to your cur
 external IP address and port 7214. Two workers are configured. The rest of the file
 should not need any changes.
 
-**NOTE**: If you install ``gunicorn`` using the requirements file, it will install it
+**NOTE**: If you installed ``gunicorn`` using the ``requirements.txt`` file, it will install it
 in your home directory as ``/home/<username>/.local/bin/gunicorn``. When started
-as a service ``gunicorn`` must be available as a general command. It doesn't count if
+as a service, ``gunicorn`` must be available as a general command. It doesn't count if
 it's in your path via ``.bashrc`` or something similar. The best way is to make a
 symbolic link such as: ::
 
   sudo ln -s /home/<username>/.local/bin/gunicorn /usr/local/bin/gunicorn
 
 **NOTE**: Don't forget to update the value for ``URL_PREFIX`` in
-``harvestConfig.py``. This determines the URL for web-images.
+``harvestConfig.py`` (from the harvest distribution from fisb-decode.
+This determines the URL for web-images.
 It will not have the correct value for an external
 website.
 
