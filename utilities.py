@@ -458,12 +458,12 @@ def checkIfInAltBounds(msg, high, low):
     return False
 
 def returnStaticOne(findArg1, request):
-    """Return zero to one message from Mongo collection ``STATIC``.
+    """Return zero to one message from Mongo collection ``STATIC_ITEMS``.
                                                                                 
     Handles all query parameters and error checks.
 
     This is exactly like the non-static version, but will search 
-    the ``STATIC`` rather than the ``MSG`` collection.
+    the ``STATIC_ITEMS`` rather than the ``MSG`` collection.
 
     Args:
         findArg1 (dict): Dictionary to be used as the
@@ -485,7 +485,7 @@ def returnStaticOne(findArg1, request):
         result['error'] = errorString
         return jsonify(result)
 
-    msg = dbConn.STATIC.find_one(findArg1)
+    msg = dbConn.STATIC_ITEMS.find_one(findArg1)
 
     if hasLatLong and not checkIfInPolygon(msg, lat, lon):
         msg = None
@@ -506,12 +506,12 @@ def returnStaticOne(findArg1, request):
     return jsonify(result)
     
 def returnStaticMany(findArg1, request):
-    """Return zero to many messages from Mongo collection ``STATIC``.
+    """Return zero to many messages from Mongo collection ``STATIC_ITEMS``.
                                                                                 
     Handles all query parameters and error checks.
 
     This is exactly like the non-static version, but will search 
-    the ``STATIC`` rather than the ``MSG`` collection.
+    the ``STATIC_ITEMS`` rather than the ``MSG`` collection.
 
     Args:
         findArg1 (dict): Dictionary to be used as the
@@ -532,7 +532,7 @@ def returnStaticMany(findArg1, request):
         result['error'] = errorString
         return jsonify(result)
 
-    cursor = dbConn.STATIC.find(findArg1).limit(limit)
+    cursor = dbConn.STATIC_ITEMS.find(findArg1).limit(limit)
     
     if cursor == None:
         result['status'] = 0
