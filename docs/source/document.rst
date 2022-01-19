@@ -2026,7 +2026,9 @@ The only new field is ``"traffic"``:
   slash followed by a single digit, and/or a forward slash followed
   by one to three characters from the set '``T``', '``R``', and '``S``'.
   The number indicates the *address qualifier* whose value can be found
-  in DO-282C. The letters indicate the type of services the ground station
+  in DO-282C. The normal address qualifier is '``0``', and no '``/0``'
+  is appended if this is the case.
+  The letters indicate the type of services the ground station
   is providing for the aircraft. '``T``' is TIS-B, '``R``' is ADS-R, and
   '``S``' is ADS-SLR. ADS-SLR stands for *Same Link Rebroadcast*. This is for
   aircraft on the ground when structures may block aircraft from receiving
