@@ -2021,7 +2021,16 @@ The only new field is ``"traffic"``:
 
 ``"traffic"``
   List of all aircraft being provided services by the ground
-  station. The list contains the aircraft ICAO addresses.
+  station. The list contains the aircraft's ICAO address.
+  Each address may optionally be followed by either a forward
+  slash followed by a single digit, and/or a forward slash followed
+  by one to three characters from the set '``T``', '``R``', and '``S``'.
+  The number indicates the *address qualifier* whose value can be found
+  in DO-282C. The letters indicate the type of services the ground station
+  is providing for the aircraft. '``T``' is TIS-B, '``R``' is ADS-R, and
+  '``S``' is ADS-SLR. ADS-SLR stands for *Same Link Rebroadcast*. This is for
+  aircraft on the ground when structures may block aircraft from receiving
+  signals from other aircraft.
 
 Example: ::
 
@@ -2032,10 +2041,10 @@ Example: ::
     "traffic": [
         "a8e069",
         "a8eb8e",
-        "aa8cf4",
-        "aba852",
+        "aa8cf4/1",
+        "aba852/R",
         "a20c5c",
-        "a20885",
+        "a20885/5/RS",
         "a03af6"
     ]
   }
