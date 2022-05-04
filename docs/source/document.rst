@@ -2021,13 +2021,18 @@ The only new field is ``"traffic"``:
 
 ``"traffic"``
   List of all aircraft being provided services by the ground
-  station. The list contains the aircraft's ICAO address.
-  Each address may optionally be followed by either a forward
-  slash followed by a single digit, and/or a forward slash followed
-  by one to three characters from the set '``T``', '``R``', and '``S``'.
-  The number indicates the *address qualifier* whose value can be found
-  in DO-282C. The normal address qualifier is '``0``', and no '``/0``'
-  is appended if this is the case.
+  station. The list contains the aircraft's ICAO address, the type of
+  services being provided, and an optional address qualifier.
+  Fields are separated by slashes (``/``). The ICAO address and type
+  of services will always be provided. The *address qualifier* will
+  be displayed only if it is not zero (the usual value). Address
+  qualifier values can be found in DO-282C.
+  
+  The type of service will be '``X``' if no services are being provided
+  (this will be the case before DO-282C is implemented), '``?``' if
+  unknown services are being provided, or a combination of 
+  one to three characters from the set '``T``', '``R``', and '``S``'.
+  
   The letters indicate the type of services the ground station
   is providing for the aircraft. '``T``' is TIS-B, '``R``' is ADS-R, and
   '``S``' is ADS-SLR. ADS-SLR stands for *Same Link Rebroadcast*. This is for
@@ -2041,13 +2046,13 @@ Example: ::
     "unique_name": "40.0383~-86.255593",
     "expiration_time": "2021-06-26T22:40:24Z",
     "traffic": [
-        "a8e069",
-        "a8eb8e",
-        "aa8cf4/1",
+        "a8e069/X",
+        "a8eb8e/T",
+        "aa8cf4/X/1",
         "aba852/R",
-        "a20c5c",
-        "a20885/5/RS",
-        "a03af6"
+        "a20c5c/S",
+        "a20885/RS/5",
+        "a03af6/TRS"
     ]
   }
 
